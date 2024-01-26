@@ -1,28 +1,43 @@
-rem %1 - значение первого аргумента командной строки bat-файла (какой он есть)
-rem %~1 - значение первого аргумента командной строки bat-файла с удалением обрамляющих кавычек (если они были)
+@echo off
+rem %1 - value of the first command line argument of the bat-file (as it is)
+rem %~1 - value of the first command line argument of the bat-file, removing framing quotes (if any)
 
-rem Переменная PROGRAM будет хранить первый аргумент командной строки заключённый в кавычки
+rem the PROGRAM variable will store the first command line argument enclosed in quotes
 set PROGRAM="%~1"
 
-rem При запуске без параметров ожидается ненулевой код возврата
+rem A non-zero return code is expected when running without parameters
 %PROGRAM% > nul
 if NOT ERRORLEVEL 1 goto err
 
-rem При запуске с правильными параметрами ожидается нулевой код возврата
-%PROGRAM% test-data\fox.txt "%TEMP%\fox.txt" bird cat
+rem A zero return code is expected when running with correct parameters
+%PROGRAM% test-data\fox.txt test-data\output.txt bird cat
 if ERRORLEVEL 1 goto err
-fc.exe "%TEMP%\fox.txt" test-data\fox.txt >nul
-if ERRORLEVEL 1 goto err
-
-rem При запуске с правильными параметрами ожидается нулевой код возврата
-%PROGRAM% test-data\fox.txt "%TEMP%\fox.txt" dog cat
-if ERRORLEVEL 1 goto err
-fc.exe "%TEMP%\fox.txt" test-data\fox-replace-dog-with-cat.txt >nul
+fc.exe test-data\output.txt test-data\fox.txt > nul
 if ERRORLEVEL 1 goto err
 
-echo OK
+%PROGRAM% test-data\fox.txt test-data\output.txt dog cat
+if ERRORLEVEL 1 goto err
+fc.exe test-data\output.txt test-data\fox-replace-dog-with-cat.txt > nul
+if ERRORLEVEL 1 goto err
+
+%PROGRAM% test-data\1231234.txt test-data\output.txt 1231234 666
+if ERRORLEVEL 1 goto err
+fc.exe test-data\output.txt test-data\1231234-replace-with-666.txt > nul
+if ERRORLEVEL 1 goto err
+
+%PROGRAM% test-data\ma.txt test-data\output.txt ma mama
+if ERRORLEVEL 1 goto err
+fc.exe test-data\output.txt test-data\ma-replace-with-mama.txt > nul
+if ERRORLEVEL 1 goto err
+
+%PROGRAM% test-data\empty-string.txt test-data\output.txt "" hello
+if ERRORLEVEL 1 goto err
+fc.exe test-data\output.txt test-data\empty-string-replace-with-hello.txt > nul
+if ERRORLEVEL 1 goto err
+
+echo Unit tests succeeded
 exit 0
 
 :err
-echo Program testing failed
+echo Unit tests failed
 exit 1

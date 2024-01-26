@@ -1,27 +1,61 @@
 #include "stdafx.h"
 
-// Возвращает результат замены всех вхождения строки searchString внутри строки subject на replacementString
-// Если строка searchString пустая, то возвращается subject
+bool FilesAreNotOpen(const std::ifstream& firstFile, const std::ofstream& secondFile);
+void CopyFileWithReplacement(std::ifstream& inputFile, std::ofstream& outputFile,
+	const std::string& searchString, const std::string& replacementString);
+void CopyStreamWithReplacement(std::istream& input, std::ostream& output,
+	const std::string& searchString, const std::string& replacementString);
 std::string ReplaceString(const std::string& subject,
+	const std::string& searchString, const std::string& replacementString);
+
+int main(int argc, char* argv[])
+{
+	if (argc != 5)
+	{
+		std::cout << "Invalid argument count\n"
+				  << "Usage: replace.exe <inputFile> <outputFile> <searchString> <replacementString>\n";
+		return 1;
+	}
+
+	std::ifstream inputFile;
+	inputFile.open(argv[1]);
+
+	std::ofstream outputFile;
+	outputFile.open(argv[2]);
+
+	if (FilesAreNotOpen(inputFile, outputFile))
+	{
+		std::cout << "Failed to open one or both files\n";
+		return 1;
+	}
+
+	std::string search = argv[3];
+	std::string replace = argv[4];
+
+	CopyFileWithReplacement(inputFile, outputFile, search, replace);
+
+	return 0;
+}
+
+bool FilesAreNotOpen(const std::ifstream& firstFile, const std::ofstream& secondFile)
+{
+	if (!firstFile.is_open() || !secondFile.is_open())
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+void CopyFileWithReplacement(std::ifstream& inputFile, std::ofstream& outputFile,
 	const std::string& searchString, const std::string& replacementString)
 {
-	// Эта функция написана не до конца. Напишите недостающий код самостоятельно
-
-	size_t pos = 0;
-	// Результат будет записан в новую строку result, оставляя строку subject неизменной
-	// Какие преимущества есть у этого способа по сравнению с алгоритмом, выполняющим
-	// замену прямо в строке subject?
-	std::string result;
-	while (pos < subject.length())
-	{
-		// Находим позицию искомой строки, начиная с pos
-		size_t foundPos = subject.find(searchString, pos);
-		// В результирующую строку записываем текст из диапазона [pos,foundPos)
-		result.append(subject, pos, foundPos - pos);
-
-		// Напишите недостающий код самостоятельно, чтобы функция работала корректно
-	}
-	return result;
+	CopyStreamWithReplacement(inputFile, outputFile, searchString, replacementString);
+	outputFile.flush();
+	inputFile.close();
+	outputFile.close();
 }
 
 void CopyStreamWithReplacement(std::istream& input, std::ostream& output,
@@ -35,31 +69,31 @@ void CopyStreamWithReplacement(std::istream& input, std::ostream& output,
 	}
 }
 
-int main(int argc, char* argv[])
+std::string ReplaceString(const std::string& subject,
+	const std::string& searchString, const std::string& replacementString)
 {
-	if (argc != 5)
+	if (searchString.empty())
 	{
-		std::cout << "Invalid argument count\n"
-				  << "Usage: replace.exe <inputFile> <outputFile> <searchString> <replacementString>\n";
-		return 1;
+		return subject;
 	}
 
-	// Самостоятельно выделите код копирования содержимого файла в отдельную функцию CopyFileWithReplacement,
-	// принимающую имена файлов, а также строки для поиска и замены
-	// Добавьте обработку ошибок
+	size_t pos = 0;
+	std::string result;
+	while (pos < subject.length())
+	{
+		size_t foundPos = subject.find(searchString, pos);
 
-	std::ifstream inputFile;
-	inputFile.open(argv[1]);
-
-	std::ofstream outputFile;
-	outputFile.open(argv[2]);
-
-	std::string search = argv[3];
-	std::string replace = argv[4];
-
-	CopyStreamWithReplacement(inputFile, outputFile, search, replace);
-	// Подумайте, для чего здесь вызывается flush?
-	outputFile.flush();
-
-	return 0;
+		if (foundPos != std::string::npos)
+		{
+			result.append(subject, pos, foundPos - pos);
+			result.append(replacementString);
+			pos = foundPos + searchString.length();
+		}
+		else
+		{
+			result.append(subject, pos, subject.length());
+			pos = subject.length();
+		}
+	}
+	return result;
 }
