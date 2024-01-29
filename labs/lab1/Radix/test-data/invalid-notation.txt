@@ -1,0 +1,2 @@
+Source or destination notation is invalid
+Acceptable notations: [2; 36]

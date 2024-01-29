@@ -43,10 +43,7 @@ bool FilesAreNotOpen(const std::ifstream& firstFile, const std::ofstream& second
 	{
 		return true;
 	}
-	else
-	{
-		return false;
-	}
+	return false;
 }
 
 void CopyFileWithReplacement(std::ifstream& inputFile, std::ofstream& outputFile,
