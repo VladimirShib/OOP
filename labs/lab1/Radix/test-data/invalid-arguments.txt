@@ -1,3 +1,4 @@
 One or more arguments are invalid
 Acceptable notations: [2; 36]
-Acceptable values: numbers with radix 2-36 (letters should be uppercase)
+Value's radix should match provided source notation
+Letters should be uppercase

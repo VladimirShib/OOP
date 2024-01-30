@@ -18,7 +18,12 @@ if NOT ERRORLEVEL 1 goto err
 rem A zero return code is expected when running with correct parameters
 %PROGRAM% "" 15 2 > test-data\output.txt
 if NOT ERRORLEVEL 1 goto err
-fc.exe /w test-data\output.txt test-data\invalid-notation.txt > nul
+fc.exe /w test-data\output.txt test-data\empty-argument.txt > nul
+if ERRORLEVEL 1 goto err
+
+%PROGRAM% 10 16 - > test-data\output.txt
+if NOT ERRORLEVEL 1 goto err
+fc.exe /w test-data\output.txt test-data\empty-argument.txt > nul
 if ERRORLEVEL 1 goto err
 
 %PROGRAM% 40 15 2 > test-data\output.txt
@@ -39,11 +44,6 @@ if ERRORLEVEL 1 goto err
 %PROGRAM% 10 20 1A > test-data\output.txt
 if NOT ERRORLEVEL 1 goto err
 fc.exe /w test-data\output.txt test-data\invalid-arguments.txt > nul
-if ERRORLEVEL 1 goto err
-
-%PROGRAM% 10 16 "" > test-data\output.txt
-if NOT ERRORLEVEL 1 goto err
-fc.exe /w test-data\output.txt test-data\empty-value.txt > nul
 if ERRORLEVEL 1 goto err
 
 %PROGRAM% 10 36 0 > test-data\output.txt
@@ -69,6 +69,11 @@ if ERRORLEVEL 1 goto err
 %PROGRAM% 36 10 HELLOWORLD > test-data\output.txt
 if NOT ERRORLEVEL 1 goto err
 fc.exe /w test-data\output.txt test-data\overflow-error.txt > nul
+if ERRORLEVEL 1 goto err
+
+%PROGRAM% 10 36 2147483647 > test-data\output.txt
+if ERRORLEVEL 1 goto err
+fc.exe test-data\output.txt test-data\10-36-2147483647-correct-output.txt > nul
 if ERRORLEVEL 1 goto err
 
 echo Unit tests succeeded

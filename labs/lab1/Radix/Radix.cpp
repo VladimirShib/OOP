@@ -14,13 +14,13 @@ struct Arguments
 Arguments ParseArguments(char* argv[]);
 int GetRadixFromString(const std::string& notation);
 std::string ConvertValueToAnotherRadix(const std::string& valueStr,
-	const int& sourceNotation, const int& destinationNotation);
-int StringToInt(const std::string& str, const int& radix, bool& wasError);
-int CharacterToNumber(const char& ch, const int& radix);
-std::string IntToString(int number, const int& radix);
-char NumberToCharacter(const int& number);
-void MultiplySafely(int& result, const int& multiplier);
-void AddSafely(int& result, const int& addend);
+	int sourceNotation, int destinationNotation);
+int StringToInt(const std::string& str, int radix);
+int CharacterToNumber(char ch, int radix);
+std::string IntToString(int number, int radix);
+char NumberToCharacter(int number);
+int MultiplySafely(int multiplicand, int multiplier);
+int AddSafely(int augend, int addend);
 
 int main(int argc, char* argv[])
 {
@@ -58,9 +58,8 @@ Arguments ParseArguments(char* argv[])
 
 int GetRadixFromString(const std::string& str)
 {
-	bool wasError = false;
-	int radix = StringToInt(str, DECIMAL, wasError);
-	if (wasError || radix < 2 || radix > 36)
+	int radix = StringToInt(str, DECIMAL);
+	if (radix < 2 || radix > 36)
 	{
 		throw std::invalid_argument(
 			"Source or destination notation is invalid\n"
@@ -72,38 +71,32 @@ int GetRadixFromString(const std::string& str)
 }
 
 std::string ConvertValueToAnotherRadix(const std::string& valueStr,
-	const int& sourceNotation, const int& destinationNotation)
+	int sourceNotation, int destinationNotation)
 {
-	bool wasError = false;
-	int value = StringToInt(valueStr, sourceNotation, wasError);
-	if (wasError)
-	{
-		throw std::invalid_argument("Value should be a valid number\n");
-	}
+	int value = StringToInt(valueStr, sourceNotation);
 
 	return IntToString(value, destinationNotation);
 }
 
-int StringToInt(const std::string& str, const int& radix, bool& wasError)
+int StringToInt(const std::string& str, int radix)
 {
 	if (str.empty() || (str[0] == '-' && str.length() == 1))
 	{
-		wasError = true;
-		return 0;
+		throw std::invalid_argument("Arguments should be valid numbers\n");
 	}
 
 	bool isNegative = (str[0] == '-');
-	int result = 0;
+	int number = 0;
 	for (size_t i = (isNegative ? 1 : 0); i < str.length(); ++i)
 	{
-		MultiplySafely(result, radix);
-		AddSafely(result, CharacterToNumber(str[i], radix));
+		number = MultiplySafely(number, radix);
+		number = AddSafely(number, CharacterToNumber(str[i], radix));
 	}
-
-	return (isNegative ? -result : result);
+	
+	return (isNegative ? -number : number);
 }
 
-int CharacterToNumber(const char& ch, const int& radix)
+int CharacterToNumber(char ch, int radix)
 {
 	if (std::isalpha(ch) && ch >= 'A' && ch < 'A' + radix - DECIMAL)
 	{
@@ -117,11 +110,12 @@ int CharacterToNumber(const char& ch, const int& radix)
 	throw std::invalid_argument(
 		"One or more arguments are invalid\n"
 		"Acceptable notations: [2; 36]\n"
-		"Acceptable values: numbers with radix 2-36 (letters should be uppercase)\n"
+		"Value's radix should match provided source notation\n"
+		"Letters should be uppercase\n"
 	);
 }
 
-std::string IntToString(int number, const int& radix)
+std::string IntToString(int number, int radix)
 {
 	if (number == 0)
 	{
@@ -150,7 +144,7 @@ std::string IntToString(int number, const int& radix)
 	return valueStr;
 }
 
-char NumberToCharacter(const int& number)
+char NumberToCharacter(int number)
 {
 	if (number >= 0 && number <= 9)
 	{
@@ -162,11 +156,11 @@ char NumberToCharacter(const int& number)
 	}
 }
 
-void MultiplySafely(int& result, const int& multiplier)
+int MultiplySafely(int multiplicand, int multiplier)
 {
-	if (result < std::numeric_limits<int>::max() / multiplier)
+	if (multiplicand <= std::numeric_limits<int>::max() / multiplier)
 	{
-		result *= multiplier;
+		return multiplicand *= multiplier;
 	}
 	else
 	{
@@ -174,11 +168,11 @@ void MultiplySafely(int& result, const int& multiplier)
 	}
 }
 
-void AddSafely(int& result, const int& addend)
+int AddSafely(int augend, int addend)
 {
-	if (result < std::numeric_limits<int>::max() - addend)
+	if (augend <= std::numeric_limits<int>::max() - addend)
 	{
-		result += addend;
+		return augend += addend;
 	}
 	else
 	{
