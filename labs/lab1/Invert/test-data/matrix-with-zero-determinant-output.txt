@@ -1,0 +1,1 @@
+Matrix's determinant is zero, inversion isn't possible

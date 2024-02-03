@@ -7,6 +7,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Replace", "Replace\Replace.
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Radix", "Radix\Radix.vcxproj", "{1B4C9464-DA3C-4853-A848-F534E43A9070}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Invert", "Invert\Invert.vcxproj", "{7A255C10-E7A7-4080-9D49-5B5913BA37AD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -31,6 +33,14 @@ Global
 		{1B4C9464-DA3C-4853-A848-F534E43A9070}.Release|Win32.Build.0 = Release|Win32
 		{1B4C9464-DA3C-4853-A848-F534E43A9070}.Release|x64.ActiveCfg = Release|x64
 		{1B4C9464-DA3C-4853-A848-F534E43A9070}.Release|x64.Build.0 = Release|x64
+		{7A255C10-E7A7-4080-9D49-5B5913BA37AD}.Debug|Win32.ActiveCfg = Debug|Win32
+		{7A255C10-E7A7-4080-9D49-5B5913BA37AD}.Debug|Win32.Build.0 = Debug|Win32
+		{7A255C10-E7A7-4080-9D49-5B5913BA37AD}.Debug|x64.ActiveCfg = Debug|x64
+		{7A255C10-E7A7-4080-9D49-5B5913BA37AD}.Debug|x64.Build.0 = Debug|x64
+		{7A255C10-E7A7-4080-9D49-5B5913BA37AD}.Release|Win32.ActiveCfg = Release|Win32
+		{7A255C10-E7A7-4080-9D49-5B5913BA37AD}.Release|Win32.Build.0 = Release|Win32
+		{7A255C10-E7A7-4080-9D49-5B5913BA37AD}.Release|x64.ActiveCfg = Release|x64
+		{7A255C10-E7A7-4080-9D49-5B5913BA37AD}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
