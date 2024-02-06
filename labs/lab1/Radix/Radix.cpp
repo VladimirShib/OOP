@@ -164,7 +164,7 @@ int MultiplySafely(int multiplicand, int multiplier)
 	}
 	else
 	{
-		throw std::overflow_error("Value is too large");
+		throw std::overflow_error("Value is too large\n");
 	}
 }
 
@@ -176,6 +176,6 @@ int AddSafely(int augend, int addend)
 	}
 	else
 	{
-		throw std::overflow_error("Value is too large");
+		throw std::overflow_error("Value is too large\n");
 	}
 }

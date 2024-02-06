@@ -17,7 +17,7 @@ Matrix3x3 GetAdjugateMatrix(const Matrix3x3& matrix);
 Matrix3x3 TransposeMatrix(const Matrix3x3& matrix);
 Matrix3x3 MultiplyMatrixByNumber(const Matrix3x3& matrix, double number);
 void PrintMatrix(const Matrix3x3& matrix);
-std::string formatDouble(double value);
+std::string FormatDouble(double value);
 
 int main(int argc, char* argv[])
 {
@@ -205,12 +205,12 @@ void PrintMatrix(const Matrix3x3& matrix)
 	{
 		for (size_t j = 0; j < MATRIX_SIZE_THREE; ++j)
 		{
-			std::cout << formatDouble(matrix[i][j]) << ((j + 1) % MATRIX_SIZE_THREE == 0 ? "\n" : "\t");
+			std::cout << FormatDouble(matrix[i][j]) << ((j + 1) % MATRIX_SIZE_THREE == 0 ? "\n" : "\t");
 		}
 	}
 }
 
-std::string formatDouble(double value)
+std::string FormatDouble(double value)
 {
 	std::string str = std::to_string(value);
 
