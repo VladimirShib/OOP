@@ -61,10 +61,7 @@ Labyrinth GetLabyrinthFromFile(const std::string& fileName)
 		throw std::runtime_error("Couldn't open file \"" + fileName + "\"\n");
 	}
 
-	Labyrinth labyrinth = ReadLabyrinth(file);
-	file.close();
-
-	return labyrinth;
+	return ReadLabyrinth(file);
 }
 
 Labyrinth ReadLabyrinth(std::ifstream& file)
@@ -170,7 +167,8 @@ Point ExpandWave(Labyrinth& labyrinth, std::queue<Point>& queue, bool& destinati
 				labyrinth[current.x + move.x][current.y + move.y].waveLength = wave + 1;
 				return { current.x + move.x, current.y + move.y };
 			}
-			else if (labyrinth[current.x + move.x][current.y + move.y].type == ' ' && !labyrinth[current.x + move.x][current.y + move.y].visited)
+			else if (labyrinth[current.x + move.x][current.y + move.y].type == ' ' &&
+					!labyrinth[current.x + move.x][current.y + move.y].visited)
 			{
 				labyrinth[current.x + move.x][current.y + move.y].visited = true;
 				labyrinth[current.x + move.x][current.y + move.y].waveLength = wave + 1;
@@ -212,7 +210,6 @@ void PrintLabyrinthToFile(const Labyrinth& labyrinth, const std::string& fileNam
 	}
 
 	WriteToFile(file, labyrinth);
-	file.close();
 }
 
 void WriteToFile(std::ofstream& file, const Labyrinth& labyrinth)

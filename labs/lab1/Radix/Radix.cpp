@@ -11,7 +11,7 @@ struct Arguments
 	std::string value;
 };
 
-Arguments ParseArguments(char* argv[]);
+Arguments ParseArguments(int argc, char* argv[]);
 int GetRadixFromString(const std::string& notation);
 std::string ConvertValueToAnotherRadix(const std::string& valueStr,
 	int sourceNotation, int destinationNotation);
@@ -24,19 +24,10 @@ int AddSafely(int augend, int addend);
 
 int main(int argc, char* argv[])
 {
-	if (argc != 4)
-	{
-		std::cout << "Invalid argument count\n"
-				  << "Usage: radix.exe <source notation> <destination notation> <value>\n";
-		return 1;
-	}
-
 	try
 	{
-		Arguments args = ParseArguments(argv);
+		Arguments args = ParseArguments(argc, argv);
 		std::cout << ConvertValueToAnotherRadix(args.value, args.sourceNotation, args.destinationNotation);
-
-		return 0;
 	}
 	catch (const std::exception& ex)
 	{
@@ -44,10 +35,21 @@ int main(int argc, char* argv[])
 
 		return 1;
 	}
+
+	return 0;
 }
 
-Arguments ParseArguments(char* argv[])
+Arguments ParseArguments(int argc, char* argv[])
 {
+	// вынес return внутрь ParseArguments
+	if (argc != 4)
+	{
+		throw std::invalid_argument(
+			"Invalid argument count\n"
+			"Usage: radix.exe <source notation> <destination notation> <value>\n"
+		);
+	}
+
 	Arguments args;
 	args.sourceNotation = GetRadixFromString(argv[1]);
 	args.destinationNotation = GetRadixFromString(argv[2]);
@@ -117,23 +119,21 @@ int CharacterToNumber(char ch, int radix)
 
 std::string IntToString(int number, int radix)
 {
-	if (number == 0)
-	{
-		return "0";
-	}
-
 	std::string valueStr;
 	bool isNegative = number < 0;
 	if (isNegative)
 	{
 		number *= -1;
 	}
-	while (number != 0)
+	// убрал в цикл do while проверку на 0
+	do
 	{
 		int digit = number % radix;
 		valueStr.push_back(NumberToCharacter(digit));
 		number /= radix;
 	}
+	while (number != 0);
+
 	if (isNegative)
 	{
 		valueStr.push_back('-');

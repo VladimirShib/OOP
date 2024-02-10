@@ -16,7 +16,6 @@
 // TODO: reference additional headers your program requires here
 
 #include <stdexcept>
-#include <array>
-#include <queue>
-#include <sstream>
-#include <optional>
+#include <cctype>
+#include <algorithm>
+#include <iterator>

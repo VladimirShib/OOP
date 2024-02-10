@@ -8,10 +8,10 @@ using Matrix3x3 = std::array<std::array<double, MATRIX_SIZE_THREE>, MATRIX_SIZE_
 
 Matrix3x3 GetMatrixFromFile(const std::string& fileName);
 Matrix3x3 ReadMatrix(std::ifstream& file);
-Matrix3x3 InvertMatrix(const Matrix3x3& matrix);
-double FindDeterminantOfMatrix3x3(const Matrix3x3& matrix);
-Matrix2x2 GetMatrix2x2(const Matrix3x3& matrix3x3, size_t rowToCrossOut, size_t columnToCrossOut);
-double FindDeterminantOfMatrix2x2(const Matrix2x2& matrix);
+std::optional<Matrix3x3> InvertMatrix(const Matrix3x3& matrix);
+double FindDeterminant(const Matrix3x3& matrix);
+double FindDeterminant(const Matrix2x2& matrix);
+Matrix2x2 GetSubmatrixByRemovingRowAndCol(const Matrix3x3& matrix3x3, size_t rowToRemove, size_t columnToRemove);
 Matrix3x3 GetMatrixOfMinors(const Matrix3x3& matrix);
 Matrix3x3 GetAdjugateMatrix(const Matrix3x3& matrix);
 Matrix3x3 TransposeMatrix(const Matrix3x3& matrix);
@@ -32,7 +32,16 @@ int main(int argc, char* argv[])
 	try
 	{
 		Matrix3x3 matrix = GetMatrixFromFile(argv[1]);
-		PrintMatrix(InvertMatrix(matrix));
+		// добавил std::optional в InvertMatrix
+		auto invertedMatrix = InvertMatrix(matrix);
+		if (invertedMatrix.has_value())
+		{
+			PrintMatrix(invertedMatrix.value());
+		}
+		else
+		{
+			throw std::invalid_argument("Matrix's determinant is zero, inversion isn't possible\n");
+		}
 	}
 	catch (const std::exception& ex)
 	{
@@ -46,16 +55,13 @@ int main(int argc, char* argv[])
 
 Matrix3x3 GetMatrixFromFile(const std::string& fileName)
 {
-	std::ifstream file;
-	file.open(fileName);
-	if (file.is_open())
+	std::ifstream file(fileName);
+	if (!file.is_open())
 	{
-		Matrix3x3 matrix = ReadMatrix(file);
-		file.close();
-		return matrix;
+		throw std::runtime_error("Couldn't open file \"" + fileName + "\"\n");
 	}
 
-	throw std::runtime_error("Couldn't open file \"" + fileName + "\"\n");
+	return ReadMatrix(file);
 }
 
 Matrix3x3 ReadMatrix(std::ifstream& file)
@@ -63,13 +69,13 @@ Matrix3x3 ReadMatrix(std::ifstream& file)
 	Matrix3x3 matrix;
 	std::string line;
 
-	for (size_t i = 0; i < MATRIX_SIZE_THREE; ++i)
+	for (size_t i = 0; i < matrix.size(); ++i)
 	{
 		if (std::getline(file, line))
 		{
 			std::istringstream iss(line);
 			double number;
-			for (size_t j = 0; j < MATRIX_SIZE_THREE; ++j)
+			for (size_t j = 0; j < matrix.size(); ++j)
 			{
 				if (iss >> number)
 				{
@@ -92,36 +98,42 @@ Matrix3x3 ReadMatrix(std::ifstream& file)
 	return matrix;
 }
 
-Matrix3x3 InvertMatrix(const Matrix3x3& matrix)
+std::optional<Matrix3x3> InvertMatrix(const Matrix3x3& matrix)
 {
-	double determinant = FindDeterminantOfMatrix3x3(matrix);
-	if (determinant != 0.0)
+	// FindDeterminant добавил перегрузку функции найти детерминант
+	double determinant = FindDeterminant(matrix);
+	if (determinant == 0.0)
 	{
-		Matrix3x3 adjugateMatrix = GetAdjugateMatrix(GetMatrixOfMinors(matrix));
-
-		return MultiplyMatrixByNumber(adjugateMatrix, 1 / determinant);
+		return std::nullopt;
 	}
-
-	throw std::invalid_argument("Matrix's determinant is zero, inversion isn't possible\n");
+	Matrix3x3 adjugateMatrix = GetAdjugateMatrix(GetMatrixOfMinors(matrix));
+	
+	return MultiplyMatrixByNumber(adjugateMatrix, 1 / determinant);
 }
 
-double FindDeterminantOfMatrix3x3(const Matrix3x3& matrix)
+double FindDeterminant(const Matrix3x3& matrix)
 {
-	double a = FindDeterminantOfMatrix2x2(GetMatrix2x2(matrix, 0, 0));
-	double b = FindDeterminantOfMatrix2x2(GetMatrix2x2(matrix, 0, 1));
-	double c = FindDeterminantOfMatrix2x2(GetMatrix2x2(matrix, 0, 2));
+	double a = FindDeterminant(GetSubmatrixByRemovingRowAndCol(matrix, 0, 0));
+	double b = FindDeterminant(GetSubmatrixByRemovingRowAndCol(matrix, 0, 1));
+	double c = FindDeterminant(GetSubmatrixByRemovingRowAndCol(matrix, 0, 2));
 
 	return matrix[0][0] * a - matrix[0][1] * b + matrix[0][2] * c;
 }
 
-Matrix2x2 GetMatrix2x2(const Matrix3x3& matrix3x3, size_t rowToCrossOut, size_t columnToCrossOut)
+double FindDeterminant(const Matrix2x2& matrix)
+{
+	return matrix[0][0] * matrix[1][1] - matrix[0][1] * matrix[1][0];
+}
+
+// назвал по-другому
+Matrix2x2 GetSubmatrixByRemovingRowAndCol(const Matrix3x3& matrix3x3, size_t rowToRemove, size_t columnToRemove)
 {
 	std::queue<double> tempStorage;
-	for (size_t i = 0; i < MATRIX_SIZE_THREE; ++i)
+	for (size_t i = 0; i < matrix3x3.size(); ++i)
 	{
-		for (size_t j = 0; j < MATRIX_SIZE_THREE; ++j)
+		for (size_t j = 0; j < matrix3x3.size(); ++j)
 		{
-			if (i != rowToCrossOut && j != columnToCrossOut)
+			if (i != rowToRemove && j != columnToRemove)
 			{
 				tempStorage.push(matrix3x3[i][j]);
 			}
@@ -129,9 +141,9 @@ Matrix2x2 GetMatrix2x2(const Matrix3x3& matrix3x3, size_t rowToCrossOut, size_t 
 	}
 
 	Matrix2x2 matrix2x2;
-	for (size_t i = 0; i < MATRIX_SIZE_TWO; ++i)
+	for (size_t i = 0; i < matrix2x2.size(); ++i)
 	{
-		for (size_t j = 0; j < MATRIX_SIZE_TWO; ++j)
+		for (size_t j = 0; j < matrix2x2.size(); ++j)
 		{
 			matrix2x2[i][j] = tempStorage.front();
 			tempStorage.pop();
@@ -141,19 +153,14 @@ Matrix2x2 GetMatrix2x2(const Matrix3x3& matrix3x3, size_t rowToCrossOut, size_t 
 	return matrix2x2;
 }
 
-double FindDeterminantOfMatrix2x2(const Matrix2x2& matrix)
-{
-	return matrix[0][0] * matrix[1][1] - matrix[0][1] * matrix[1][0];
-}
-
 Matrix3x3 GetMatrixOfMinors(const Matrix3x3& matrix)
 {
 	Matrix3x3 matrixOfMinors;
-	for (size_t i = 0; i < MATRIX_SIZE_THREE; ++i)
+	for (size_t i = 0; i < matrix.size(); ++i)
 	{
-		for (size_t j = 0; j < MATRIX_SIZE_THREE; ++j)
+		for (size_t j = 0; j < matrix.size(); ++j)
 		{
-			matrixOfMinors[i][j] = FindDeterminantOfMatrix2x2(GetMatrix2x2(matrix, i, j));
+			matrixOfMinors[i][j] = FindDeterminant(GetSubmatrixByRemovingRowAndCol(matrix, i, j));
 		}
 	}
 
@@ -174,9 +181,9 @@ Matrix3x3 GetAdjugateMatrix(const Matrix3x3& matrix)
 Matrix3x3 TransposeMatrix(const Matrix3x3& matrix)
 {
 	Matrix3x3 transposedMatrix;
-	for (size_t i = 0; i < MATRIX_SIZE_THREE; ++i)
+	for (size_t i = 0; i < matrix.size(); ++i)
 	{
-		for (size_t j = 0; j < MATRIX_SIZE_THREE; ++j)
+		for (size_t j = 0; j < matrix.size(); ++j)
 		{
 			transposedMatrix[j][i] = matrix[i][j];
 		}
@@ -188,9 +195,9 @@ Matrix3x3 TransposeMatrix(const Matrix3x3& matrix)
 Matrix3x3 MultiplyMatrixByNumber(const Matrix3x3& matrix, double number)
 {
 	Matrix3x3 newMatrix;
-	for (size_t i = 0; i < MATRIX_SIZE_THREE; ++i)
+	for (size_t i = 0; i < matrix.size(); ++i)
 	{
-		for (size_t j = 0; j < MATRIX_SIZE_THREE; ++j)
+		for (size_t j = 0; j < matrix.size(); ++j)
 		{
 			newMatrix[i][j] = matrix[i][j] * number;
 		}
@@ -201,11 +208,11 @@ Matrix3x3 MultiplyMatrixByNumber(const Matrix3x3& matrix, double number)
 
 void PrintMatrix(const Matrix3x3& matrix)
 {
-	for (size_t i = 0; i < MATRIX_SIZE_THREE; ++i)
+	for (size_t i = 0; i < matrix.size(); ++i)
 	{
-		for (size_t j = 0; j < MATRIX_SIZE_THREE; ++j)
+		for (size_t j = 0; j < matrix.size(); ++j)
 		{
-			std::cout << FormatDouble(matrix[i][j]) << ((j + 1) % MATRIX_SIZE_THREE == 0 ? "\n" : "\t");
+			std::cout << FormatDouble(matrix[i][j]) << ((j + 1) % matrix.size() == 0 ? "\n" : "\t");
 		}
 	}
 }

@@ -21,8 +21,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{7a255c10-e7a7-4080-9d49-5b5913ba37ad}</ProjectGuid>
-    <RootNamespace>Invert</RootNamespace>
+    <ProjectGuid>{8483e1c8-6ff8-4dee-942a-a179d63cedd9}</ProjectGuid>
+    <RootNamespace>Crypt</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -147,7 +147,7 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="invert.cpp" />
+    <ClCompile Include="crypt.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="test.bat" />
