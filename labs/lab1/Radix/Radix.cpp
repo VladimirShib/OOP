@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include <cassert>
 
 constexpr int MAX_RADIX = 36;
 constexpr int MIN_RADIX = 2;
@@ -21,6 +22,7 @@ std::string IntToString(int number, int radix);
 char NumberToCharacter(int number);
 int MultiplySafely(int multiplicand, int multiplier);
 int AddSafely(int augend, int addend);
+bool IsRadixValid(int radix);
 
 int main(int argc, char* argv[])
 {
@@ -41,12 +43,11 @@ int main(int argc, char* argv[])
 
 Arguments ParseArguments(int argc, char* argv[])
 {
-	// вынес return внутрь ParseArguments
 	if (argc != 4)
 	{
 		throw std::invalid_argument(
 			"Invalid argument count\n"
-			"Usage: radix.exe <source notation> <destination notation> <value>\n"
+			"Usage: radix.exe <source notation> <destination notation> <value>"
 		);
 	}
 
@@ -61,11 +62,11 @@ Arguments ParseArguments(int argc, char* argv[])
 int GetRadixFromString(const std::string& str)
 {
 	int radix = StringToInt(str, DECIMAL);
-	if (radix < 2 || radix > 36)
+	if (!IsRadixValid(radix))
 	{
 		throw std::invalid_argument(
 			"Source or destination notation is invalid\n"
-			"Acceptable notations: [2; 36]\n"
+			"Acceptable notations: [2; 36]"
 		);
 	}
 
@@ -82,9 +83,14 @@ std::string ConvertValueToAnotherRadix(const std::string& valueStr,
 
 int StringToInt(const std::string& str, int radix)
 {
+	if (!IsRadixValid(radix))
+	{
+		throw std::out_of_range("Radix is out of range");
+	}
+
 	if (str.empty() || (str[0] == '-' && str.length() == 1))
 	{
-		throw std::invalid_argument("Arguments should be valid numbers\n");
+		throw std::invalid_argument("Arguments should be valid numbers");
 	}
 
 	bool isNegative = (str[0] == '-');
@@ -100,6 +106,8 @@ int StringToInt(const std::string& str, int radix)
 
 int CharacterToNumber(char ch, int radix)
 {
+	assert(IsRadixValid(radix));
+
 	if (std::isalpha(ch) && ch >= 'A' && ch < 'A' + radix - DECIMAL)
 	{
 		return ch + DECIMAL - 'A';
@@ -113,7 +121,7 @@ int CharacterToNumber(char ch, int radix)
 		"One or more arguments are invalid\n"
 		"Acceptable notations: [2; 36]\n"
 		"Value's radix should match provided source notation\n"
-		"Letters should be uppercase\n"
+		"Letters should be uppercase"
 	);
 }
 
@@ -125,7 +133,7 @@ std::string IntToString(int number, int radix)
 	{
 		number *= -1;
 	}
-	// убрал в цикл do while проверку на 0
+	
 	do
 	{
 		int digit = number % radix;
@@ -164,7 +172,7 @@ int MultiplySafely(int multiplicand, int multiplier)
 	}
 	else
 	{
-		throw std::overflow_error("Value is too large\n");
+		throw std::overflow_error("Value is too large");
 	}
 }
 
@@ -176,6 +184,11 @@ int AddSafely(int augend, int addend)
 	}
 	else
 	{
-		throw std::overflow_error("Value is too large\n");
+		throw std::overflow_error("Value is too large");
 	}
+}
+
+bool IsRadixValid(int radix)
+{
+	return radix >= MIN_RADIX && radix <= MAX_RADIX;
 }

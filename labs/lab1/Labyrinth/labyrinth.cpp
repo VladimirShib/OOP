@@ -58,7 +58,7 @@ Labyrinth GetLabyrinthFromFile(const std::string& fileName)
 	std::ifstream file(fileName);
 	if (!file.is_open())
 	{
-		throw std::runtime_error("Couldn't open file \"" + fileName + "\"\n");
+		throw std::runtime_error("Couldn't open file \"" + fileName + "\"");
 	}
 
 	return ReadLabyrinth(file);
@@ -81,7 +81,7 @@ Labyrinth ReadLabyrinth(std::ifstream& file)
 			}
 			else
 			{
-				throw std::invalid_argument("Only 'A', 'B', ' ' and '#' symbols are accepted\n");
+				throw std::invalid_argument("Only 'A', 'B', ' ' and '#' symbols are accepted");
 			}
 		}
 		labyrinth.push_back(row);
@@ -110,7 +110,7 @@ Point ValidateLabyrinthAndFindStartingPoint(const Labyrinth& labyrinth)
 				}
 				else
 				{
-					throw std::invalid_argument("More than one starting point found\n");
+					throw std::invalid_argument("More than one starting point found");
 				}
 			}
 			else if (labyrinth[i][j].type == 'B')
@@ -121,14 +121,14 @@ Point ValidateLabyrinthAndFindStartingPoint(const Labyrinth& labyrinth)
 				}
 				else
 				{
-					throw std::invalid_argument("More than one destination point found\n");
+					throw std::invalid_argument("More than one destination point found");
 				}
 			}
 		}
 	}
 	if (!startFound || !destinationFound)
 	{
-		throw std::invalid_argument("No starting or destination point found\n");
+		throw std::invalid_argument("No starting or destination point found");
 	}
 
 	return start;
@@ -206,7 +206,7 @@ void PrintLabyrinthToFile(const Labyrinth& labyrinth, const std::string& fileNam
 	std::ofstream file(fileName);
 	if (!file.is_open())
 	{
-		throw std::runtime_error("Couldn't open file \"" + fileName + "\"\n");
+		throw std::runtime_error("Couldn't open file \"" + fileName + "\"");
 	}
 
 	WriteToFile(file, labyrinth);

@@ -32,15 +32,14 @@ int main(int argc, char* argv[])
 	try
 	{
 		Matrix3x3 matrix = GetMatrixFromFile(argv[1]);
-		// добавил std::optional в InvertMatrix
-		auto invertedMatrix = InvertMatrix(matrix);
-		if (invertedMatrix.has_value())
+		
+		if (auto invertedMatrix = InvertMatrix(matrix))
 		{
-			PrintMatrix(invertedMatrix.value());
+			PrintMatrix(*invertedMatrix);
 		}
 		else
 		{
-			throw std::invalid_argument("Matrix's determinant is zero, inversion isn't possible\n");
+			throw std::invalid_argument("Matrix's determinant is zero, inversion isn't possible");
 		}
 	}
 	catch (const std::exception& ex)
@@ -58,7 +57,7 @@ Matrix3x3 GetMatrixFromFile(const std::string& fileName)
 	std::ifstream file(fileName);
 	if (!file.is_open())
 	{
-		throw std::runtime_error("Couldn't open file \"" + fileName + "\"\n");
+		throw std::runtime_error("Couldn't open file \"" + fileName + "\"");
 	}
 
 	return ReadMatrix(file);
@@ -71,27 +70,26 @@ Matrix3x3 ReadMatrix(std::ifstream& file)
 
 	for (size_t i = 0; i < matrix.size(); ++i)
 	{
-		if (std::getline(file, line))
-		{
-			std::istringstream iss(line);
-			double number;
-			for (size_t j = 0; j < matrix.size(); ++j)
-			{
-				if (iss >> number)
-				{
-					matrix[i][j] = number;
-				}
-				else
-				{
-					throw std::invalid_argument("Unsupported matrix size or invalid input\n"
-												"Matrix should be 3x3 and contain valid numbers\n");
-				}
-			}
-		}
-		else
+		if (!std::getline(file, line))
 		{
 			throw std::invalid_argument("Unsupported matrix size or invalid input\n"
-										"Matrix should be 3x3 and contain valid numbers\n");
+										"Matrix should be 3x3 and contain valid numbers");
+		}
+
+		std::istringstream iss(line);
+		double number;
+		
+		for (size_t j = 0; j < matrix.size(); ++j)
+		{
+			if (iss >> number)
+			{
+				matrix[i][j] = number;
+			}
+			else
+			{
+				throw std::invalid_argument("Unsupported matrix size or invalid input\n"
+											"Matrix should be 3x3 and contain valid numbers");
+			}
 		}
 	}
 
@@ -100,7 +98,6 @@ Matrix3x3 ReadMatrix(std::ifstream& file)
 
 std::optional<Matrix3x3> InvertMatrix(const Matrix3x3& matrix)
 {
-	// FindDeterminant добавил перегрузку функции найти детерминант
 	double determinant = FindDeterminant(matrix);
 	if (determinant == 0.0)
 	{
@@ -125,17 +122,19 @@ double FindDeterminant(const Matrix2x2& matrix)
 	return matrix[0][0] * matrix[1][1] - matrix[0][1] * matrix[1][0];
 }
 
-// назвал по-другому
 Matrix2x2 GetSubmatrixByRemovingRowAndCol(const Matrix3x3& matrix3x3, size_t rowToRemove, size_t columnToRemove)
 {
 	std::queue<double> tempStorage;
 	for (size_t i = 0; i < matrix3x3.size(); ++i)
 	{
-		for (size_t j = 0; j < matrix3x3.size(); ++j)
+		if (i != rowToRemove)
 		{
-			if (i != rowToRemove && j != columnToRemove)
+			for (size_t j = 0; j < matrix3x3.size(); ++j)
 			{
-				tempStorage.push(matrix3x3[i][j]);
+				if (j != columnToRemove)
+				{
+					tempStorage.push(matrix3x3[i][j]);
+				}
 			}
 		}
 	}

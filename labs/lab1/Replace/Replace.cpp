@@ -49,14 +49,14 @@ void CopyFileWithReplacement(const std::string& inputFileName, const std::string
 
 	if (!FilesAreOpen(inputFile, outputFile))
 	{
-		throw std::runtime_error("Failed to open one or both files\n");
+		throw std::runtime_error("Failed to open one or both files");
 	}
 
 	CopyStreamWithReplacement(inputFile, outputFile, searchString, replacementString);
 
 	if (!outputFile.flush())
 	{
-		throw std::runtime_error("Couldn't flush output\n");
+		throw std::runtime_error("Couldn't flush output");
 	}
 }
 

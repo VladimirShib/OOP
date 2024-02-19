@@ -23,7 +23,6 @@ int main(int argc, char* argv[])
 
 	try
 	{
-		// Перенес открытие файлов в функцию TransformFile
 		std::string inputFileName(argv[2]);
 		std::string outputFileName(argv[3]);
 		uint8_t key = GetKey(argv[4]);
@@ -55,7 +54,7 @@ uint8_t GetKey(const std::string& str)
 {
 	if (str.empty())
 	{
-		throw std::invalid_argument("Invalid key. It should be a number within [0; 255] range\n");
+		throw std::invalid_argument("Invalid key. It should be a number within [0; 255] range");
 	}
 
 	uint8_t key = 0;
@@ -78,7 +77,7 @@ uint8_t MultiplySafely(uint8_t multiplicand, uint8_t multiplier)
 	}
 	else
 	{
-		throw std::overflow_error("Max key value is 255\n");
+		throw std::overflow_error("Max key value is 255");
 	}
 }
 
@@ -90,7 +89,7 @@ uint8_t AddSafely(uint8_t augend, uint8_t addend)
 	}
 	else
 	{
-		throw std::overflow_error("Max key value is 255\n");
+		throw std::overflow_error("Max key value is 255");
 	}
 }
 
@@ -102,10 +101,10 @@ uint8_t CharacterToNumber(char ch, uint8_t radix)
 	}
 	else
 	{
-		throw std::invalid_argument("Invalid key. It should be a number within [0; 255] range\n");
+		throw std::invalid_argument("Invalid key. It should be a number within [0; 255] range");
 	}
 }
-// Сделал через std::transform
+
 void TransformFile(const std::string& inputFileName, const std::string& outputFileName, uint8_t key, bool encrypting)
 {
 	static_assert(sizeof(char) == sizeof(uint8_t));
@@ -114,7 +113,7 @@ void TransformFile(const std::string& inputFileName, const std::string& outputFi
 	std::ofstream outputFile(outputFileName, std::ios::binary);
 	if (!inputFile.is_open() || !outputFile.is_open())
 	{
-		throw std::runtime_error("Couldn't open input or output file\n");
+		throw std::runtime_error("Couldn't open input or output file");
 	}
 
 	std::transform(
