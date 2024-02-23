@@ -1,30 +1,48 @@
 #include "stdafx.h"
 
-const std::unordered_set<char> VALID_CHARS = { ' ', '#', 'A', 'B' };
+constexpr int LABYRINTH_SIZE = 100;
+constexpr char EMPTY = ' ';
+constexpr char WALL = '#';
+constexpr char START = 'A';
+constexpr char DESTINATION = 'B';
+constexpr char PATH = '.';
+const std::unordered_set<char> VALID_CHARS = { EMPTY, WALL, START, DESTINATION };
 
-struct Point
+struct Vector2i
 {
 	int x;
 	int y;
 };
 
+struct Point
+{
+	int x;
+	int y;
+
+	Point operator+(const Vector2i v) const
+	{
+		return { x + v.x, y + v.y };
+	}
+};
+
 struct Cell
 {
 	char type;
-	int waveLength;
-	bool visited;
+	int waveDistance;
 };
 
-using Labyrinth = std::vector<std::vector<Cell>>;
+using Labyrinth = std::array<std::array<Cell, LABYRINTH_SIZE>, LABYRINTH_SIZE>;
 
 Labyrinth GetLabyrinthFromFile(const std::string& fileName);
-Labyrinth ReadLabyrinth(std::ifstream& file);
+Labyrinth ReadLabyrinth(std::istream& input);
+void InitLabyrinth(Labyrinth& labyrinth);
 Point ValidateLabyrinthAndFindStartingPoint(const Labyrinth& labyrinth);
 void FindPath(Labyrinth& labyrinth, const Point& start);
-Point ExpandWave(Labyrinth& labyrinth, std::queue<Point>& queue, bool& destinationReached);
+std::optional<Point> FindDestinationPoint(Labyrinth& labyrinth, std::queue<Point>& queue);
+bool CanMove(const Labyrinth& labyrinth, const Point point);
 void Backtrace(Labyrinth& labyrinth, const Point& destination);
 void PrintLabyrinthToFile(const Labyrinth& labyrinth, const std::string& fileName);
-void WriteToFile(std::ofstream& file, const Labyrinth& labyrinth);
+void WriteToFile(std::ostream& output, const Labyrinth& labyrinth);
 
 int main(int argc, char* argv[])
 {
@@ -64,30 +82,44 @@ Labyrinth GetLabyrinthFromFile(const std::string& fileName)
 	return ReadLabyrinth(file);
 }
 
-Labyrinth ReadLabyrinth(std::ifstream& file)
+Labyrinth ReadLabyrinth(std::istream& input)
 {
 	Labyrinth labyrinth;
+	InitLabyrinth(labyrinth);
+
 	std::string line;
+	size_t row = 0;
 
-	while (std::getline(file, line))
+	while (std::getline(input, line))
 	{
-		std::vector<Cell> row;
-
-		for (char ch : line)
+		for (size_t i = 0; i < line.size(); ++i)
 		{
-			if (VALID_CHARS.contains(ch))
+			if (VALID_CHARS.contains(line[i]))
 			{
-				row.push_back({ ch, -1, false });
+				labyrinth[row][i].type = line[i];
 			}
 			else
 			{
 				throw std::invalid_argument("Only 'A', 'B', ' ' and '#' symbols are accepted");
 			}
 		}
-		labyrinth.push_back(row);
+
+		++row;
 	}
 
 	return labyrinth;
+}
+
+void InitLabyrinth(Labyrinth& labyrinth)
+{
+	for (size_t i = 0; i < LABYRINTH_SIZE; ++i)
+	{
+		for (size_t j = 0; j < LABYRINTH_SIZE; ++j)
+		{
+			labyrinth[i][j].type = EMPTY;
+			labyrinth[i][j].waveDistance = 0;
+		}
+	}
 }
 
 Point ValidateLabyrinthAndFindStartingPoint(const Labyrinth& labyrinth)
@@ -96,33 +128,29 @@ Point ValidateLabyrinthAndFindStartingPoint(const Labyrinth& labyrinth)
 	bool startFound = false;
 	bool destinationFound = false;
 
-	for (size_t i = 0; i < labyrinth.size(); ++i)
+	for (size_t i = 0; i < LABYRINTH_SIZE; ++i)
 	{
-		for (size_t j = 0; j < labyrinth[i].size(); ++j)
+		for (size_t j = 0; j < LABYRINTH_SIZE; ++j)
 		{
-			if (labyrinth[i][j].type == 'A')
+			if (labyrinth[i][j].type == START)
 			{
-				if (!startFound)
-				{
-					start.x = static_cast<int>(i);
-					start.y = static_cast<int>(j);
-					startFound = true;
-				}
-				else
+				if (startFound)
 				{
 					throw std::invalid_argument("More than one starting point found");
 				}
+
+				start.x = static_cast<int>(i);
+				start.y = static_cast<int>(j);
+				startFound = true;
 			}
-			else if (labyrinth[i][j].type == 'B')
+			else if (labyrinth[i][j].type == DESTINATION)
 			{
-				if (!destinationFound)
-				{
-					destinationFound = true;
-				}
-				else
+				if (destinationFound)
 				{
 					throw std::invalid_argument("More than one destination point found");
 				}
+				
+				destinationFound = true;
 			}
 		}
 	}
@@ -138,62 +166,70 @@ void FindPath(Labyrinth& labyrinth, const Point& start)
 {
 	std::queue<Point> queue;
 	queue.push(start);
-	labyrinth[start.x][start.y].waveLength = 0;
-	labyrinth[start.x][start.y].visited = true;
-	bool destinationReached = false;
 
-	Point destination = ExpandWave(labyrinth, queue, destinationReached);
-	if (destinationReached)
+	std::optional<Point> destination = FindDestinationPoint(labyrinth, queue);
+	if (destination.has_value())
 	{
-		Backtrace(labyrinth, destination);
+		Backtrace(labyrinth, *destination);
 	}
 }
 
-Point ExpandWave(Labyrinth& labyrinth, std::queue<Point>& queue, bool& destinationReached)
+std::optional<Point> FindDestinationPoint(Labyrinth& labyrinth, std::queue<Point>& queue)
 {
-	const std::vector<Point> moves = { { 1, 0 }, { 0, 1 }, { -1, 0 }, { 0, -1 } };
-
+	const std::array<Vector2i, 4> moves = {{ { 1, 0 }, { 0, 1 }, { -1, 0 }, { 0, -1 } }};
 	while (!queue.empty())
 	{
 		Point current = queue.front();
 		queue.pop();
-		int wave = labyrinth[current.x][current.y].waveLength;
+		int wave = labyrinth[current.x][current.y].waveDistance;
 
 		for (const auto& move : moves)
 		{
-			if (labyrinth[current.x + move.x][current.y + move.y].type == 'B')
+			Point newPoint = current + move;
+			if (CanMove(labyrinth, newPoint))
 			{
-				destinationReached = true;
-				labyrinth[current.x + move.x][current.y + move.y].waveLength = wave + 1;
-				return { current.x + move.x, current.y + move.y };
-			}
-			else if (labyrinth[current.x + move.x][current.y + move.y].type == ' ' &&
-					!labyrinth[current.x + move.x][current.y + move.y].visited)
-			{
-				labyrinth[current.x + move.x][current.y + move.y].visited = true;
-				labyrinth[current.x + move.x][current.y + move.y].waveLength = wave + 1;
-				queue.push({ current.x + move.x, current.y + move.y });
+				if (labyrinth[newPoint.x][newPoint.y].type == DESTINATION)
+				{
+					labyrinth[newPoint.x][newPoint.y].waveDistance = wave + 1;
+					return std::optional<Point>({ newPoint.x, newPoint.y });
+				}
+				else if (labyrinth[newPoint.x][newPoint.y].waveDistance == 0)
+				{
+					labyrinth[newPoint.x][newPoint.y].waveDistance = wave + 1;
+					queue.push({ newPoint.x, newPoint.y });
+				}
 			}
 		}
 	}
 
-	return { -1, -1 };
+	return std::nullopt;
+}
+
+bool CanMove(const Labyrinth& labyrinth, const Point point)
+{
+	return {
+		labyrinth[point.x][point.y].type != WALL &&
+		(point.x >= 0 && point.x < LABYRINTH_SIZE) &&
+		(point.y >= 0 && point.y < LABYRINTH_SIZE)
+	};
 }
 
 void Backtrace(Labyrinth& labyrinth, const Point& destination)
 {
-	const std::vector<Point> moves = { { 1, 0 }, { 0, 1 }, { -1, 0 }, { 0, -1 } };
+	const std::array<Vector2i, 4> moves = {{ { 1, 0 }, { 0, 1 }, { -1, 0 }, { 0, -1 } }};
 	Point current = destination;
-	int wave = labyrinth[current.x][current.y].waveLength;
+	int wave = labyrinth[current.x][current.y].waveDistance;
 
 	while (wave > 1)
 	{
 		for (const auto& move : moves)
 		{
-			if (labyrinth[current.x + move.x][current.y + move.y].waveLength == wave - 1)
+			Point newPoint = current + move;
+
+			if (labyrinth[newPoint.x][newPoint.y].waveDistance == wave - 1)
 			{
-				labyrinth[current.x + move.x][current.y + move.y].type = '.';
-				current = { current.x + move.x, current.y + move.y };
+				labyrinth[newPoint.x][newPoint.y].type = PATH;
+				current = { newPoint.x, newPoint.y };
 				break;
 			}
 		}
@@ -212,14 +248,14 @@ void PrintLabyrinthToFile(const Labyrinth& labyrinth, const std::string& fileNam
 	WriteToFile(file, labyrinth);
 }
 
-void WriteToFile(std::ofstream& file, const Labyrinth& labyrinth)
+void WriteToFile(std::ostream& output, const Labyrinth& labyrinth)
 {
 	for (const auto& row : labyrinth)
 	{
 		for (const auto& cell : row)
 		{
-			file << cell.type;
+			output << cell.type;
 		}
-		file << "\n";
+		output << "\n";
 	}
 }

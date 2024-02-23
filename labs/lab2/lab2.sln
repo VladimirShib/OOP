@@ -11,6 +11,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Vector_test", "Vector\Vecto
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HtmlDecode_test", "HtmlDecode\HtmlDecode_test\HtmlDecode_test.vcxproj", "{0DA34E5E-F3D7-4344-BCEF-64164676CA92}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Dictionary", "Dictionary\Dictionary.vcxproj", "{F3708314-B434-4CFE-8D39-143CAD087916}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PrimeNumbers", "PrimeNumbers\PrimeNumbers.vcxproj", "{99E5D7CD-B4A7-49D1-A08D-F2514ED71C9C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -51,6 +55,22 @@ Global
 		{0DA34E5E-F3D7-4344-BCEF-64164676CA92}.Release|Win32.Build.0 = Release|Win32
 		{0DA34E5E-F3D7-4344-BCEF-64164676CA92}.Release|x64.ActiveCfg = Release|x64
 		{0DA34E5E-F3D7-4344-BCEF-64164676CA92}.Release|x64.Build.0 = Release|x64
+		{F3708314-B434-4CFE-8D39-143CAD087916}.Debug|Win32.ActiveCfg = Debug|Win32
+		{F3708314-B434-4CFE-8D39-143CAD087916}.Debug|Win32.Build.0 = Debug|Win32
+		{F3708314-B434-4CFE-8D39-143CAD087916}.Debug|x64.ActiveCfg = Debug|x64
+		{F3708314-B434-4CFE-8D39-143CAD087916}.Debug|x64.Build.0 = Debug|x64
+		{F3708314-B434-4CFE-8D39-143CAD087916}.Release|Win32.ActiveCfg = Release|Win32
+		{F3708314-B434-4CFE-8D39-143CAD087916}.Release|Win32.Build.0 = Release|Win32
+		{F3708314-B434-4CFE-8D39-143CAD087916}.Release|x64.ActiveCfg = Release|x64
+		{F3708314-B434-4CFE-8D39-143CAD087916}.Release|x64.Build.0 = Release|x64
+		{99E5D7CD-B4A7-49D1-A08D-F2514ED71C9C}.Debug|Win32.ActiveCfg = Debug|Win32
+		{99E5D7CD-B4A7-49D1-A08D-F2514ED71C9C}.Debug|Win32.Build.0 = Debug|Win32
+		{99E5D7CD-B4A7-49D1-A08D-F2514ED71C9C}.Debug|x64.ActiveCfg = Debug|x64
+		{99E5D7CD-B4A7-49D1-A08D-F2514ED71C9C}.Debug|x64.Build.0 = Debug|x64
+		{99E5D7CD-B4A7-49D1-A08D-F2514ED71C9C}.Release|Win32.ActiveCfg = Release|Win32
+		{99E5D7CD-B4A7-49D1-A08D-F2514ED71C9C}.Release|Win32.Build.0 = Release|Win32
+		{99E5D7CD-B4A7-49D1-A08D-F2514ED71C9C}.Release|x64.ActiveCfg = Release|x64
+		{99E5D7CD-B4A7-49D1-A08D-F2514ED71C9C}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

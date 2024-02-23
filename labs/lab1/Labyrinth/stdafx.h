@@ -17,5 +17,6 @@
 
 #include <stdexcept>
 #include <queue>
-#include <vector>
 #include <unordered_set>
+#include <optional>
+#include <array>
