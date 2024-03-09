@@ -1,15 +1,86 @@
 #include "polishNotation_functions.h"
+#include <sstream>
+#include <locale>
+#include <stack>
 
-int CaculateExpression(const std::string& expression)
+namespace
 {
-	if (expression.empty())
+
+enum class Operation
+{
+	ADDITION,
+	MULTIPLICATION
+};
+
+Operation GetOperation(char ch)
+{
+	switch (ch)
+	{
+	case '+':
+		return Operation::ADDITION;
+	case '*':
+		return Operation::MULTIPLICATION;
+	default:
+		throw std::invalid_argument("ERROR");
+	}
+}
+
+void Init(std::istream& input, Operation& operation)
+{
+	char ch;
+	input >> ch;
+
+	if (ch != '(')
 	{
 		throw std::invalid_argument("ERROR");
 	}
 
-	std::istringstream input(expression);
+	if (input >> ch)
+	{
+		operation = GetOperation(ch);
+	}
 
-	return DoCalculations(input);
+	if (input >> ch && ch == ')')
+	{
+		throw std::invalid_argument("ERROR");
+	}
+
+	input.unget();
+}
+
+void ValidateChar(std::istream& input, char ch)
+{
+	if (std::isdigit(ch))
+	{
+		input.unget();
+		return;
+	}
+
+	if (ch == '-')
+	{
+		if (input >> ch && std::isdigit(ch))
+		{
+			input.unget();
+			input.unget();
+			return;
+		}
+	}
+
+	throw std::invalid_argument("ERROR");
+}
+
+int ApplyOperation(int result, const int value, const Operation& operation)
+{
+	if (operation == Operation::ADDITION)
+	{
+		result += value;
+	}
+	else
+	{
+		result *= value;
+	}
+
+	return result;
 }
 
 int DoCalculations(std::istream& input)
@@ -48,7 +119,7 @@ int DoCalculations(std::istream& input)
 			{
 				operation = operations.top();
 				operations.pop();
-				CalculateResult(result, tempResult.top(), operation);
+				result = ApplyOperation(result, tempResult.top(), operation);
 				tempResult.pop();
 
 				continue;
@@ -62,77 +133,22 @@ int DoCalculations(std::istream& input)
 		ValidateChar(input, ch);
 		int value;
 		input >> value;
-		CalculateResult(result, value, operation);
+		result = ApplyOperation(result, value, operation);
 	}
 
 	throw std::invalid_argument("ERROR");
 }
 
-void Init(std::istream& input, Operation& operation)
-{
-	char ch;
-	input >> ch;
+} // namespace
 
-	if (ch != '(')
+int CaculateExpression(const std::string& expression)
+{
+	if (expression.empty())
 	{
 		throw std::invalid_argument("ERROR");
 	}
 
-	if (input >> ch)
-	{
-		operation = GetOperation(ch);
-	}
+	std::istringstream input(expression);
 
-	if (input >> ch && ch == ')')
-	{
-		throw std::invalid_argument("ERROR");
-	}
-
-	input.unget();
-}
-
-Operation GetOperation(char ch)
-{
-	switch (ch)
-	{
-	case '+':
-		return Operation::ADDITION;
-	case '*':
-		return Operation::MULTIPLICATION;
-	default:
-		throw std::invalid_argument("ERROR");
-	}
-}
-
-void ValidateChar(std::istream& input, char ch)
-{
-	if (std::isdigit(ch))
-	{
-		input.unget();
-		return;
-	}
-
-	if (ch == '-')
-	{
-		if (input >> ch && std::isdigit(ch))
-		{
-			input.unget();
-			input.unget();
-			return;
-		}
-	}
-
-	throw std::invalid_argument("ERROR");
-}
-
-void CalculateResult(int& result, const int value, const Operation& operation)
-{
-	if (operation == Operation::ADDITION)
-	{
-		result += value;
-	}
-	else
-	{
-		result *= value;
-	}
+	return DoCalculations(input);
 }

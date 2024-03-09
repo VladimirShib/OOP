@@ -5,24 +5,12 @@
 // Testing `ReadInputNumbers(std::istream&)` function
 TEST_CASE("Reading input")
 {
-	SECTION("Valid input")
-	{
-		std::string input = "6 2.1 85 3223 53";
-		std::istringstream iss(input);
-		std::vector<double> v = ReadInputNumbers(iss);
+	std::string input = "6 2.1 85 3223 53";
+	std::istringstream iss(input);
+	std::vector<double> v = ReadInputNumbers(iss);
 
-		std::vector<double> expectedVector = { 6, 2.1, 85, 3223, 53 };
-		CHECK(v == expectedVector);
-	}
-
-	//SECTION("Invalid input")
-	//{
-	//	std::string input = "6 2.1 85 3223 53 hello";
-	//	std::istringstream iss(input);
-	//	std::vector<double> v = ReadInputNumbers(iss);
-
-	//	CHECK_THROWS(ReadInputNumbers(iss));
-	//}
+	std::vector<double> expectedVector = { 6, 2.1, 85, 3223, 53 };
+	CHECK(v == expectedVector);
 }
 
 // Testing `MultiplyVectorByMinElement(std::vector<double>&)` function
@@ -70,7 +58,21 @@ TEST_CASE("Printing vector")
 		std::string expectedOutput = "0.000 1.000 2.000 3.000 4.000 5.000 \n";
 
 		std::ostringstream oss;
-		SortAndPrintVector(oss, inputVector);
+		SortVector(inputVector);
+		PrintVector(oss, inputVector);
+		std::string result = oss.str();
+
+		CHECK(result == expectedOutput);
+	}
+
+	SECTION("Unsorted vector")
+	{
+		std::vector<double> inputVector = { 5, 4, 3, 2, 1, 0 };
+		std::string expectedOutput = "0.000 1.000 2.000 3.000 4.000 5.000 \n";
+
+		std::ostringstream oss;
+		SortVector(inputVector);
+		PrintVector(oss, inputVector);
 		std::string result = oss.str();
 
 		CHECK(result == expectedOutput);

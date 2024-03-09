@@ -1,50 +1,18 @@
 #include "parser_functions.h"
+#include <regex>
+#include <algorithm>
+#include <locale>
+#include <cctype>
 
-bool ParseUrl(URL& url, const std::string& str)
+namespace
 {
-	std::regex urlRegex(R"((\w+):\/\/([^\/:]+)(?::(\d+))?\/?(.*?))");
-	std::smatch result;
 
-	if (std::regex_match(str, result, urlRegex))
-	{
-		if (SaveData(url, result))
-		{
-			return true;
-		}
-	}
-
-	return false;
-}
-
-bool SaveData(URL& url, const std::smatch& result)
+enum class Protocol
 {
-	std::string protocol;
-	if (!GetProtocol(result[1], protocol))
-	{
-		return false;
-	}
-
-	url.fullUrl = result[0];
-	url.host = result[2];
-	url.document = result[4];
-
-	if (result[3].matched)
-	{
-		int port = std::stoi(result[3]);
-
-		if (port < 1 || port > 65535)
-		{
-			return false;
-		}
-		url.port = port;
-	}
-	else
-	{
-		url.port = GetDefaultPort(protocol);
-	}
-
-	return true;
-}
+	HTTP = 80,
+	HTTPS = 443,
+	FTP = 21
+};
 
 bool GetProtocol(std::string result, std::string& protocol)
 {
@@ -61,6 +29,24 @@ bool GetProtocol(std::string result, std::string& protocol)
 	return false;
 }
 
+bool ValidateNumber(const std::string& str)
+{
+	if (str.empty())
+	{
+		return false;
+	}
+
+	for (char ch : str)
+	{
+		if (!std::isdigit(ch))
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
 int GetDefaultPort(const std::string& protocol)
 {
 	if (protocol == "http")
@@ -75,6 +61,59 @@ int GetDefaultPort(const std::string& protocol)
 	{
 		return static_cast<int>(Protocol::FTP);
 	}
+}
+
+bool SaveData(URL& url, const std::smatch& result)
+{
+	std::string protocol;
+	if (!GetProtocol(result[1], protocol))
+	{
+		return false;
+	}
+
+	url.fullUrl = result[0];
+	url.host = result[2];
+	url.document = result[4];
+
+	if (result[3].matched)
+	{
+		if (!ValidateNumber(result[3]))
+		{
+			return false;
+		}
+
+		int port = std::stoi(result[3]);
+
+		if (port < 1 || port > 65535)
+		{
+			return false;
+		}
+		url.port = port;
+	}
+	else
+	{
+		url.port = GetDefaultPort(protocol);
+	}
+
+	return true;
+}
+
+}
+
+bool ParseUrl(URL& url, const std::string& str)
+{
+	std::regex urlRegex(R"((\w+):\/\/([^\/:]+)(?::([^\/]*))?\/?(.*?))");
+	std::smatch result;
+
+	if (std::regex_match(str, result, urlRegex))
+	{
+		if (SaveData(url, result))
+		{
+			return true;
+		}
+	}
+
+	return false;
 }
 
 void PrintUrl(std::ostream& output, const URL& url)

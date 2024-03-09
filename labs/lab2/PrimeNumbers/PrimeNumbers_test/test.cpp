@@ -1,6 +1,7 @@
 #define CATCH_CONFIG_MAIN
 #include "../../../../catch2/catch.hpp"
 #include "../primeNumbers_functions.h"
+#include <boost/timer/timer.hpp>
 
 TEST_CASE("Checking contents")
 {
@@ -8,6 +9,7 @@ TEST_CASE("Checking contents")
 	CHECK(GeneratePrimeNumbersSet(3) == std::set<int>{ 2, 3 });
 	CHECK(GeneratePrimeNumbersSet(6) == std::set<int>{ 2, 3, 5 });
 	CHECK(GeneratePrimeNumbersSet(7) == std::set<int>{ 2, 3, 5, 7 });
+	CHECK(GeneratePrimeNumbersSet(25) == std::set<int>{ 2, 3, 5, 7, 11, 13, 17, 19, 23 });
 	CHECK(GeneratePrimeNumbersSet(36) == std::set<int>{ 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31 });
 	CHECK(GeneratePrimeNumbersSet(37) == std::set<int>{ 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37 });
 	CHECK(GeneratePrimeNumbersSet(100) == std::set<int>{ 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97 });
@@ -21,5 +23,11 @@ TEST_CASE("Checking size")
 	CHECK(GeneratePrimeNumbersSet(149).size() == 35);
 	CHECK(GeneratePrimeNumbersSet(150).size() == 35);
 	CHECK(GeneratePrimeNumbersSet(151).size() == 36);
+
+#ifdef NDEBUG
+	boost::timer::cpu_timer t;
 	CHECK(GeneratePrimeNumbersSet(100000000).size() == 5761455);
+	auto duration = t.elapsed();
+	std::cout << "Time elapsed: " << duration.user << "\n";
+#endif
 }

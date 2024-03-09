@@ -21,8 +21,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{6f498469-d694-4ae0-8564-24bc6e56ae33}</ProjectGuid>
-    <RootNamespace>PrimeNumberstest</RootNamespace>
+    <ProjectGuid>{1e6c6caf-1db9-458b-880d-6989c435c095}</ProjectGuid>
+    <RootNamespace>ExpandTemplatetest</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -131,27 +131,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\primeNumbers_functions.h" />
+    <ClInclude Include="..\template_functions.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\primeNumbers_functions.cpp" />
+    <ClCompile Include="..\template_functions.cpp" />
     <ClCompile Include="test.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="..\..\packages\boost.1.82.0\build\boost.targets" Condition="Exists('..\..\packages\boost.1.82.0\build\boost.targets')" />
-    <Import Project="..\..\packages\boost_timer-vc143.1.82.0\build\boost_timer-vc143.targets" Condition="Exists('..\..\packages\boost_timer-vc143.1.82.0\build\boost_timer-vc143.targets')" />
-    <Import Project="..\..\packages\boost_chrono-vc143.1.82.0\build\boost_chrono-vc143.targets" Condition="Exists('..\..\packages\boost_chrono-vc143.1.82.0\build\boost_chrono-vc143.targets')" />
   </ImportGroup>
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\..\packages\boost.1.82.0\build\boost.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\boost.1.82.0\build\boost.targets'))" />
-    <Error Condition="!Exists('..\..\packages\boost_timer-vc143.1.82.0\build\boost_timer-vc143.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\boost_timer-vc143.1.82.0\build\boost_timer-vc143.targets'))" />
-    <Error Condition="!Exists('..\..\packages\boost_chrono-vc143.1.82.0\build\boost_chrono-vc143.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\boost_chrono-vc143.1.82.0\build\boost_chrono-vc143.targets'))" />
-  </Target>
 </Project>

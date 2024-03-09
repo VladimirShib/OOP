@@ -41,6 +41,33 @@ TEST_CASE("Valid URLs")
 		CHECK(url.port == 21);
 		CHECK(url.document == "lang=en#title");
 	}
+
+	{
+		std::string line5 = "http://www.mysite.com:1/document/";
+		CHECK(ParseUrl(url, line5));
+		CHECK(url.fullUrl == line5);
+		CHECK(url.host == "www.mysite.com");
+		CHECK(url.port == 1);
+		CHECK(url.document == "document/");
+	}
+
+	{
+		std::string line6 = "http://www.mysite.com:65535/document/";
+		CHECK(ParseUrl(url, line6));
+		CHECK(url.fullUrl == line6);
+		CHECK(url.host == "www.mysite.com");
+		CHECK(url.port == 65535);
+		CHECK(url.document == "document/");
+	}
+
+	{
+		std::string line7 = "http://a.com/abc:8080";
+		CHECK(ParseUrl(url, line7));
+		CHECK(url.fullUrl == line7);
+		CHECK(url.host == "a.com");
+		CHECK(url.port == 80);
+		CHECK(url.document == "abc:8080");
+	}
 }
 
 TEST_CASE("Invalid URLs")
@@ -53,7 +80,7 @@ TEST_CASE("Invalid URLs")
 	}
 
 	{
-		std::string line2 = "http://www.mysite.com:0000/docs/document1.html?page=30&lang=en#title";
+		std::string line2 = "http://www.mysite.com:0/docs/document1.html?page=30&lang=en#title";
 		CHECK(!ParseUrl(url, line2));
 	}
 
@@ -65,5 +92,20 @@ TEST_CASE("Invalid URLs")
 	{
 		std::string line4 = "http:///www.mysite.com";
 		CHECK(!ParseUrl(url, line4));
+	}
+
+	{
+		std::string line5 = "http://a.com:/abc:8080";
+		CHECK(!ParseUrl(url, line5));
+	}
+
+	{
+		std::string line6 = "http://a.com::/abc";
+		CHECK(!ParseUrl(url, line6));
+	}
+
+	{
+		std::string line7 = "http://a.com:100:/abc";
+		CHECK(!ParseUrl(url, line7));
 	}
 }

@@ -1,41 +1,13 @@
 #include "dictionary_functions.h"
+#include <fstream>
+#include <algorithm>
+#include <cctype>
+#include <sstream>
 
-std::optional<std::string> ParseArguments(int argc, char* argv[])
+namespace
 {
-	if (argc != 2)
-	{
-		return std::nullopt;
-	}
 
-	return std::string(argv[1]);
-}
-
-void RunDictionary(std::istream& input, std::ostream& output, const std::optional<std::string>& dictionaryFile)
-{
-	Dictionary dictionary;
-	if (dictionaryFile.has_value())
-	{
-		FillDictionaryFromFile(dictionary, dictionaryFile.value());
-	}
-
-	const std::string END_CHAT_COMMAND = "...";
-	Dictionary tempDictionary;
-	std::string userInput;
-
-	output << "Translator 3000.\n\n";
-	do
-	{
-		std::getline(input, userInput);
-		if (userInput != END_CHAT_COMMAND)
-		{
-			ToLower(userInput);
-			ProcessUserInput(input, output, dictionary, tempDictionary, userInput);
-		}
-	} while (userInput != END_CHAT_COMMAND);
-
-	ProcessDialogEnding(input, output, tempDictionary,
-		dictionaryFile.has_value() ? dictionaryFile.value() : DEFAULT_DICTIONARY_PATH);
-}
+const std::string DEFAULT_DICTIONARY_PATH = "../../Dictionary/dictionary.txt";
 
 void FillDictionaryFromFile(Dictionary& dictionary, const std::string& fileName)
 {
@@ -55,8 +27,8 @@ void FillDictionaryFromFile(Dictionary& dictionary, const std::string& fileName)
 		std::string value;
 		iss >> value;
 
-		CheckAndAddToDictionary(dictionary, key, value);
-		CheckAndAddToDictionary(dictionary, value, key);
+		AddToDictionary(dictionary, key, value);
+		AddToDictionary(dictionary, value, key);
 
 		while (iss >> value)
 		{
@@ -65,51 +37,18 @@ void FillDictionaryFromFile(Dictionary& dictionary, const std::string& fileName)
 				dictionary[key].push_back(',');
 				dictionary[key] += (" " + value);
 			}
-			CheckAndAddToDictionary(dictionary, value, key);
+			AddToDictionary(dictionary, value, key);
 		}
 	}
 }
 
-void CheckAndAddToDictionary(Dictionary& dictionary, const std::string& key, const std::string& value)
+void ToLower(std::string& str)
 {
-	if (dictionary.find(key) == dictionary.end())
-	{
-		dictionary[key] = value;
-	}
-	else
-	{
-		if (dictionary[key].find(value) == std::string::npos)
-		{
-			dictionary[key].push_back(',');
-			dictionary[key] += (" " + value);
-		}
-	}
+	std::transform(str.begin(), str.end(), str.begin(),
+		[](unsigned char c) { return std::tolower(c); });
 }
 
-void ProcessUserInput(std::istream& input, std::ostream& output, const Dictionary& dictionary,
-	Dictionary& tempDictionary, const std::string& userInput)
-{
-	auto it1 = dictionary.find(userInput);
-	auto it2 = tempDictionary.find(userInput);
-	if (it1 != dictionary.end())
-	{
-		output << it1->second << "\n\n";
-		return;
-	}
-	else if (it2 != tempDictionary.end())
-	{
-		output << it2->second << "\n\n";
-		return;
-	}
-	else
-	{
-		output << "Unknown word \"" + userInput + "\". Enter translation or empty string to cancel.\n";
-	}
-
-	ProcessNewWord(input, output, tempDictionary, userInput);
-}
-
-void ProcessNewWord(std::istream& input, std::ostream& output, Dictionary& dictionary, const std::string& word)
+bool ProcessNewWord(std::istream& input, std::ostream& output, Dictionary& dictionary, const std::string& word)
 {
 	std::string translation;
 	std::getline(input, translation);
@@ -117,21 +56,48 @@ void ProcessNewWord(std::istream& input, std::ostream& output, Dictionary& dicti
 	if (translation.empty())
 	{
 		output << "The word \"" + word + "\" has been ignored.\n\n";
+		return false;
 	}
-	else
-	{
-		ToLower(translation);
-		CheckAndAddToDictionary(dictionary, word, translation);
-		CheckAndAddToDictionary(dictionary, translation, word);
 
-		output << "\nThe word \"" + word + "\" has been saved to dictionary as \"" + translation + "\".\n\n";
+	ToLower(translation);
+	AddToDictionary(dictionary, word, translation);
+	AddToDictionary(dictionary, translation, word);
+
+	output << "\nThe word \"" + word + "\" has been saved to dictionary as \"" + translation + "\".\n\n";
+
+	return true;
+}
+
+void SaveChangesToDictionary(const std::string& fileName, const Dictionary& dictionary)
+{
+	std::ofstream file(fileName);
+
+	if (!file.is_open())
+	{
+		throw std::runtime_error("Couldn't open file \"" + fileName + "\"");
+	}
+
+	std::string str;
+	for (auto& pair : dictionary)
+	{
+		file << pair.first;
+		std::istringstream iss(pair.second);
+		while (iss >> str)
+		{
+			if (str.back() == ',')
+			{
+				str = str.substr(0, str.length() - 1);
+			}
+			file << " " << str;
+		}
+		file << "\n";
 	}
 }
 
-void ProcessDialogEnding(std::istream& input, std::ostream& output, Dictionary& dictionary,
-	const std::string& fileName)
+void ProcessDialogEnding(std::istream& input, std::ostream& output, const Dictionary& dictionary,
+	const std::string& fileName, const bool changesWereMade)
 {
-	if (dictionary.empty())
+	if (!changesWereMade)
 	{
 		output << "See you later.\n";
 	}
@@ -158,34 +124,67 @@ void ProcessDialogEnding(std::istream& input, std::ostream& output, Dictionary& 
 	}
 }
 
-void SaveChangesToDictionary(const std::string& fileName, Dictionary dictionary)
-{
-	std::ofstream file(fileName, std::ios::out | std::ios::app);
+} // namespace
 
-	if (!file.is_open())
+void RunDictionary(std::istream& input, std::ostream& output, const std::optional<std::string>& dictionaryFile)
+{
+	Dictionary dictionary;
+	if (dictionaryFile.has_value())
 	{
-		throw std::runtime_error("Couldn't open file \"" + fileName + "\"");
+		FillDictionaryFromFile(dictionary, dictionaryFile.value());
 	}
 
-	std::string str;
-	for (auto& pair : dictionary)
+	const std::string END_CHAT_COMMAND = "...";
+	std::string userInput;
+	bool changesWereMade = false;
+
+	output << "Translator 3000.\n\n";
+	do
 	{
-		file << "\n"
-			 << pair.first;
-		std::istringstream iss(pair.second);
-		while (iss >> str)
+		std::getline(input, userInput);
+		if (userInput != END_CHAT_COMMAND)
 		{
-			if (str.back() == ',')
-			{
-				str = str.substr(0, str.length() - 1);
-			}
-			file << " " << str;
+			ToLower(userInput);
+			ProcessUserInput(input, output, dictionary, userInput, changesWereMade);
+		}
+	} while (userInput != END_CHAT_COMMAND);
+
+	ProcessDialogEnding(input, output, dictionary,
+		dictionaryFile.has_value() ? dictionaryFile.value() : DEFAULT_DICTIONARY_PATH, changesWereMade);
+}
+
+void AddToDictionary(Dictionary& dictionary, const std::string& key, const std::string& value)
+{
+	if (dictionary.find(key) == dictionary.end())
+	{
+		dictionary[key] = value;
+	}
+	else
+	{
+		if (dictionary[key].find(value) == std::string::npos)
+		{
+			dictionary[key].push_back(',');
+			dictionary[key] += (" " + value);
 		}
 	}
 }
 
-void ToLower(std::string& str)
+void ProcessUserInput(std::istream& input, std::ostream& output, Dictionary& dictionary,
+	const std::string& userInput, bool& changesWereMade)
 {
-	std::transform(str.begin(), str.end(), str.begin(),
-		[](unsigned char c) { return std::tolower(c); });
+	auto it = dictionary.find(userInput);
+	if (it != dictionary.end())
+	{
+		output << it->second << "\n\n";
+		return;
+	}
+	else
+	{
+		output << "Unknown word \"" + userInput + "\". Enter translation or empty string to cancel.\n";
+	}
+
+	if (ProcessNewWord(input, output, dictionary, userInput))
+	{
+		changesWereMade = true;
+	}
 }

@@ -1,4 +1,6 @@
 #include "vector_functions.h"
+#include <algorithm>
+#include <iomanip>
 
 std::vector<double> ReadInputNumbers(std::istream& input)
 {
@@ -21,28 +23,34 @@ std::vector<double> ReadInputNumbers(std::istream& input)
 
 void MultiplyVectorByMinElement(std::vector<double>& numbers)
 {
-	if (!numbers.empty())
+	if (numbers.empty())
 	{
-		auto minElementIterator = std::min_element(numbers.begin(), numbers.end());
-		double minElement = *minElementIterator;
-
-		for (double& number : numbers)
-		{
-			number *= minElement;
-		}
+		return;
 	}
+	
+	auto minElementIterator = std::min_element(numbers.begin(), numbers.end());
+	double minElement = *minElementIterator;
+
+	std::transform(numbers.begin(), numbers.end(),
+				   numbers.begin(),
+				   [minElement](double number) { return number * minElement; });
 }
 
-void SortAndPrintVector(std::ostream& output, std::vector<double>& numbers)
+void SortVector(std::vector<double>& numbers)
 {
-	if (!numbers.empty())
-	{
-		std::sort(numbers.begin(), numbers.end());
+	std::sort(numbers.begin(), numbers.end());
+}
 
-		for (double number : numbers)
-		{
-			output << std::fixed << std::setprecision(3) << number << " ";
-		}
-		output << "\n";
+void PrintVector(std::ostream& output, const std::vector<double>& numbers)
+{
+	if (numbers.empty())
+	{
+		return;
 	}
+
+	for (double number : numbers)
+	{
+		output << std::fixed << std::setprecision(3) << number << " ";
+	}
+	output << std::endl;
 }

@@ -6,7 +6,8 @@ int main()
 	{
 		std::vector<double> numbers = ReadInputNumbers(std::cin);
 		MultiplyVectorByMinElement(numbers);
-		SortAndPrintVector(std::cout, numbers);
+		SortVector(numbers);
+		PrintVector(std::cout, numbers);
 	}
 	catch (const std::exception& ex)
 	{
