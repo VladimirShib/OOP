@@ -40,14 +40,19 @@ if ERRORLEVEL 1 goto err
 fc.exe /w test-data\output.txt test-data\labyrinth2-output.txt > nul
 if ERRORLEVEL 1 goto err
 
-%PROGRAM% test-data\labyrinth3.txt test-data\output.txt > test-data\error-output.txt
+%PROGRAM% test-data\no-path.txt test-data\output.txt > test-data\error-output.txt
 if ERRORLEVEL 1 goto err
-fc.exe /w test-data\output.txt test-data\labyrinth3-output.txt > nul
+fc.exe /w test-data\output.txt test-data\no-path-output.txt > nul
 if ERRORLEVEL 1 goto err
 
 %PROGRAM% test-data\non-enclosed-labyrinth.txt test-data\output.txt > test-data\error-output.txt
 if ERRORLEVEL 1 goto err
 fc.exe /w test-data\output.txt test-data\non-enclosed-labyrinth-output.txt > nul
+if ERRORLEVEL 1 goto err
+
+%PROGRAM% test-data\no-labyrinth.txt test-data\output.txt > test-data\error-output.txt
+if ERRORLEVEL 1 goto err
+fc.exe /w test-data\output.txt test-data\no-labyrinth-output.txt > nul
 if ERRORLEVEL 1 goto err
 
 echo Unit tests succeeded
