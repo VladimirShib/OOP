@@ -19,6 +19,7 @@ private:
 	bool SetSpeed(const int args);
 	bool SetGear(const int args);
 	bool Info(const int args) const;
+	bool Help(const int args) const;
 
 private:
 	using Handler = std::function<bool(const int args)>;

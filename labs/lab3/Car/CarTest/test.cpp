@@ -1,6 +1,9 @@
 #define CATCH_CONFIG_MAIN
 #include "../../../../catch2/catch.hpp"
 #include "../car.h"
+#include "../remoteControl.h"
+#include <string>
+#include <sstream>
 
 SCENARIO("Trying to change gears and speed with engine off")
 {
@@ -1021,6 +1024,97 @@ SCENARIO("Turning the engine off")
 				THEN("The engine turns off")
 				{
 					CHECK(!car.IsTurnedOn());
+				}
+			}
+		}
+	}
+}
+
+SCENARIO("Testing remote control")
+{
+	GIVEN("A car and a remote control")
+	{
+		std::istringstream iss;
+		std::ostringstream oss;
+
+		CCar car;
+		CRemoteControl remoteControl(car, iss, oss);
+
+		CHECK(!car.IsTurnedOn());
+
+		WHEN("Turning the car engine on")
+		{
+			std::string command = "EngineOn";
+			iss.str(command);
+			remoteControl.HandleCommand();
+			iss.clear();
+
+			THEN("The car engine should be on")
+			{
+				CHECK(car.IsTurnedOn());
+			}
+
+			AND_WHEN("Turning the car engine off")
+			{
+				command = "EngineOff";
+				iss.str(command);
+				remoteControl.HandleCommand();
+
+				THEN("The car engine should be off")
+				{
+					CHECK(!car.IsTurnedOn());
+				}
+			}
+
+			WHEN("Setting the reverse gear")
+			{
+				command = "SetGear -1";
+				iss.str(command);
+				remoteControl.HandleCommand();
+				iss.clear();
+
+				THEN("The reverse gear is set")
+				{
+					CHECK(car.GetGear() == -1);
+				}
+
+				AND_WHEN("Setting the speed")
+				{
+					command = "SetSpeed 20";
+					iss.str(command);
+					remoteControl.HandleCommand();
+
+					THEN("The car starts moving backward")
+					{
+						CHECK(car.GetSpeed() == 20);
+						CHECK(car.GetDirection() == CCar::Direction::BACKWARD);
+					}
+				}
+			}
+
+			WHEN("Setting the first gear")
+			{
+				command = "SetGear 1";
+				iss.str(command);
+				remoteControl.HandleCommand();
+				iss.clear();
+
+				THEN("The first gear is set")
+				{
+					CHECK(car.GetGear() == 1);
+				}
+
+				AND_WHEN("Setting the speed")
+				{
+					command = "SetSpeed 30";
+					iss.str(command);
+					remoteControl.HandleCommand();
+
+					THEN("The car starts moving forward")
+					{
+						CHECK(car.GetSpeed() == 30);
+						CHECK(car.GetDirection() == CCar::Direction::FORWARD);
+					}
 				}
 			}
 		}

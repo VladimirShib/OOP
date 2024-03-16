@@ -21,9 +21,15 @@
     <ClCompile Include="..\car.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\remoteControl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\car.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\remoteControl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

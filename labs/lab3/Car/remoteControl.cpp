@@ -19,7 +19,8 @@ CRemoteControl::CRemoteControl(CCar& car, std::istream& input, std::ostream& out
 		  { "EngineOff", std::bind(&CRemoteControl::TurnOff, this, _1) },
 		  { "SetSpeed", std::bind(&CRemoteControl::SetSpeed, this, _1) },
 		  { "SetGear", std::bind(&CRemoteControl::SetGear, this, _1) },
-		  { "Info", std::bind(&CRemoteControl::Info, this, _1) } })
+		  { "Info", std::bind(&CRemoteControl::Info, this, _1) },
+		  { "Help", std::bind(&CRemoteControl::Help, this, _1) } })
 {
 }
 
@@ -143,6 +144,17 @@ bool CRemoteControl::Info(const int) const
 	m_output << "Speed: " << m_car.GetSpeed() << "\n";
 
 	m_output << "Gear: " << m_car.GetGear() << "\n";
+
+	return true;
+}
+
+bool CRemoteControl::Help(const int) const
+{
+	m_output << "EngineOn - turn on engine\n";
+	m_output << "EngineOff - turn off engine\n";
+	m_output << "SetSpeed <number> - set speed\n";
+	m_output << "SetGear <number> - set gear\n";
+	m_output << "Info - get info about car\n";
 
 	return true;
 }

@@ -1,16 +1,5 @@
 #include "car.h"
 
-CCar::CCar()
-{
-	m_speedRange[-1] = { 0, 20 };
-	m_speedRange[0] = { 0, 150 };
-	m_speedRange[1] = { 0, 30 };
-	m_speedRange[2] = { 20, 50 };
-	m_speedRange[3] = { 30, 60 };
-	m_speedRange[4] = { 40, 90 };
-	m_speedRange[5] = { 50, 150 };
-}
-
 void CCar::TurnOnEngine()
 {
 	m_isOn = true;
@@ -29,7 +18,7 @@ bool CCar::TurnOffEngine()
 
 bool CCar::SetSpeed(const int speed)
 {
-	if (!m_isOn || speed < m_speedRange[m_gear].min || speed > m_speedRange[m_gear].max)
+	if (!m_isOn || IsSpeedOutOfRange(speed, m_gear))
 	{
 		return false;
 	}
@@ -58,7 +47,7 @@ bool CCar::SetGear(const int gear)
 	{
 		return false;
 	}
-	if (m_speed < m_speedRange[gear].min || m_speed > m_speedRange[gear].max)
+	if (IsSpeedOutOfRange(m_speed, gear))
 	{
 		return false;
 	}
@@ -101,4 +90,10 @@ void CCar::SetDirection()
 	{
 		m_direction = Direction::FORWARD;
 	}
+}
+
+bool CCar::IsSpeedOutOfRange(const int speed, const int gear)
+{
+	auto it = m_speedRange.find(gear);
+	return speed < it->second.min || speed > it->second.max;
 }

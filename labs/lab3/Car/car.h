@@ -10,7 +10,6 @@ public:
 		BACKWARD,
 		STANDING_STILL,
 	};
-	CCar();
 
 	void TurnOnEngine();
 	bool TurnOffEngine();
@@ -24,6 +23,7 @@ public:
 
 private:
 	void SetDirection();
+	bool IsSpeedOutOfRange(const int speed, const int gear);
 
 private:
 	struct Range
@@ -38,5 +38,13 @@ private:
 	int m_speed = 0;
 	int m_gear = 0;
 	Direction m_direction = Direction::STANDING_STILL;
-	SpeedRange m_speedRange;
+	inline static const SpeedRange m_speedRange {
+		{ -1, { 0, 20 } },
+		{ 0, { 0, 150 } },
+		{ 1, { 0, 30 } },
+		{ 2, { 20, 50 } },
+		{ 3, { 30, 60 } },
+		{ 4, { 40, 90 } },
+		{ 5, { 50, 150} },
+	};
 };
