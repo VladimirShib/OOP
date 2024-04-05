@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<svg width="1000px" height="800px" xmlns="http://www.w3.org/2000/svg">
+
+	<circle r="45.00" cx="210.00" cy="50.00" style="fill:#ffff00;stroke:#fede78;stroke-width:3" />
+	<polygon points="1.00,250.00 126.00,250.00 126.00,270.00 1.00,270.00 " style="fill:#fcd5b5;stroke:#000000;stroke-width:3" />
+	<polygon points="45.00,330.00 55.00,330.00 55.00,370.00 45.00,370.00 " style="fill:#4f81bd;stroke:#000000;stroke-width:3" />
+	<polygon points="70.00,330.00 80.00,330.00 80.00,370.00 70.00,370.00 " style="fill:#4f81bd;stroke:#000000;stroke-width:3" />
+	<polygon points="7.00,334.00 115.00,334.00 61.00,224.00 " style="fill:#00b0f0;stroke:#000000;stroke-width:3" />
+	<circle r="25.00" cx="61.00" cy="213.00" style="fill:#fcd5b5;stroke:#000000;stroke-width:3" />
+	<circle r="1.50" cx="52.00" cy="206.00" style="fill:#000000;stroke:#000000;stroke-width:3" />
+	<circle r="1.50" cx="70.00" cy="206.00" style="fill:#000000;stroke:#000000;stroke-width:3" />
+	<line x1="61.00" y1="210.00" x2="61.00" y2="215.00" style="stroke:#00b0f0;stroke-width:3" />
+	<line x1="51.00" y1="221.00" x2="61.00" y2="227.00" style="stroke:#ff0000;stroke-width:3" />
+	<line x1="61.00" y1="227.00" x2="71.00" y2="221.00" style="stroke:#ff0000;stroke-width:3" />
+	<polygon points="46.00,170.00 46.00,200.00 64.00,185.00 " style="fill:#ff0000;stroke:#000000;stroke-width:3" />
+	<polygon points="58.00,189.00 76.00,174.00 76.00,204.00 " style="fill:#ff0000;stroke:#000000;stroke-width:3" />
+	<line x1="125.00" y1="254.00" x2="105.00" y2="154.00" style="stroke:#000000;stroke-width:3" />
+	<circle r="30.00" cx="106.00" cy="122.00" style="fill:#00b0f0;stroke:#000000;stroke-width:3" />
+
+</svg>
