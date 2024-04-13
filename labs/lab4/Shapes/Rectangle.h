@@ -11,7 +11,7 @@ public:
 		double width,
 		double height,
 		std::uint32_t outline = 0,
-		std::uint32_t fill = 0xff);
+		std::uint32_t fill = 0xffffff);
 
 	double GetArea() const override;
 	double GetPerimeter() const override;

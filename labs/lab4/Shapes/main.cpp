@@ -5,7 +5,7 @@
 int main()
 {
 	CShapeCreator creator;
-	CCanvas canvas;
+	CSVGCanvas canvas;
 	CShapeApp app(creator, canvas, std::cin, std::cout);
 
 	while (!std::cin.eof() && !std::cin.fail())

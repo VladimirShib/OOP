@@ -1,24 +1,22 @@
 #pragma once
 
 #include "ICanvas.h"
-#include <string>
-#include <vector>
 
-class CCanvas : public ICanvas
+class CSVGCanvas : public ICanvas
 {
 public:
-	bool Render() const override;
-	bool Clear() override;
-	void DrawLine(CPoint start, CPoint end, std::uint32_t color = 0);
+	bool RenderToFile(const std::string& fileName);
+	bool Clear(const std::string& fileName);
+	void DrawLine(CPoint start, CPoint end, std::optional<std::uint32_t> color = std::nullopt);
 	void DrawPolygon(
 		const std::vector<CPoint>& points,
-		std::uint32_t outline = 0,
-		std::uint32_t fill = 0xffffff) override;
+		std::optional<std::uint32_t> outline = std::nullopt,
+		std::optional<std::uint32_t> fill = std::nullopt) override;
 	void DrawCircle(
 		CPoint center,
 		double radius,
-		std::uint32_t outline = 0,
-		std::uint32_t fill = 0xffffff) override;
+		std::optional<std::uint32_t> outline = std::nullopt,
+		std::optional<std::uint32_t> fill = std::nullopt) override;
 
 private:
 	std::vector<std::string> m_shapes;

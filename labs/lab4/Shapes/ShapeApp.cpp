@@ -4,6 +4,7 @@
 #include "Point.h"
 #include "ShapeCreator.h"
 #include <algorithm>
+#include <cassert>
 #include <cstdint>
 #include <iomanip>
 #include <regex>
@@ -14,6 +15,8 @@ namespace
 {
 
 using Shapes = std::vector<std::unique_ptr<IShape>>;
+
+const std::string canvasFile = "D://Study//OOP//labs//lab4//Shapes//canvas.svg";
 
 struct LineArgs
 {
@@ -120,6 +123,10 @@ bool ParseCircleArgs(const std::string& args, CircleArgs& circle)
 	{
 		return false;
 	}
+	if (circle.radius <= 0)
+	{
+		return false;
+	}
 
 	circle.outline = GetColorFromStreamOrDefault(iss, 0);
 	circle.fill = GetColorFromStreamOrDefault(iss, 0xffffff);
@@ -129,6 +136,8 @@ bool ParseCircleArgs(const std::string& args, CircleArgs& circle)
 
 std::string GetMaxAreaShapeInfo(const Shapes& shapes)
 {
+	assert(!shapes.empty());
+
 	auto maxAreaShape = std::max_element(shapes.begin(), shapes.end(),
 		[](const auto& a, const auto& b) {
 			return a->GetArea() < b->GetArea();
@@ -139,6 +148,8 @@ std::string GetMaxAreaShapeInfo(const Shapes& shapes)
 
 std::string GetMinPerimeterShapeInfo(const Shapes& shapes)
 {
+	assert(!shapes.empty());
+
 	auto minPerimeterShape = std::min_element(shapes.begin(), shapes.end(),
 		[](const auto& a, const auto& b) {
 			return a->GetPerimeter() < b->GetPerimeter();
@@ -149,7 +160,7 @@ std::string GetMinPerimeterShapeInfo(const Shapes& shapes)
 
 } // namespace
 
-CShapeApp::CShapeApp(CShapeCreator& creator, ICanvas& canvas, std::istream& input, std::ostream& output)
+CShapeApp::CShapeApp(CShapeCreator& creator, CSVGCanvas& canvas, std::istream& input, std::ostream& output)
 	: m_creator(creator)
 	, m_canvas(canvas)
 	, m_input(input)
@@ -184,10 +195,11 @@ bool CShapeApp::HandleCommand() const
 		return false;
 	}
 
-	return it->second(args);
+	it->second(args);
+	return true;
 }
 
-bool CShapeApp::CreateLine(const std::string& args) const
+void CShapeApp::CreateLine(const std::string& args) const
 {
 	LineArgs lineArgs;
 	if (!::ParseLineArgs(args, lineArgs))
@@ -199,11 +211,9 @@ bool CShapeApp::CreateLine(const std::string& args) const
 	{
 		m_creator.CreateLine(lineArgs.start, lineArgs.end, lineArgs.color);
 	}
-
-	return true;
 }
 
-bool CShapeApp::CreateTriangle(const std::string& args) const
+void CShapeApp::CreateTriangle(const std::string& args) const
 {
 	TriangleArgs triangleArgs;
 	if (!::ParseTriangleArgs(args, triangleArgs))
@@ -220,11 +230,9 @@ bool CShapeApp::CreateTriangle(const std::string& args) const
 			triangleArgs.outline,
 			triangleArgs.fill);
 	}
-
-	return true;
 }
 
-bool CShapeApp::CreateRectangle(const std::string& args) const
+void CShapeApp::CreateRectangle(const std::string& args) const
 {
 	RectangleArgs rectangleArgs;
 	if (!::ParseRectangleArgs(args, rectangleArgs))
@@ -242,11 +250,9 @@ bool CShapeApp::CreateRectangle(const std::string& args) const
 			rectangleArgs.outline,
 			rectangleArgs.fill);
 	}
-
-	return true;
 }
 
-bool CShapeApp::CreateCircle(const std::string& args) const
+void CShapeApp::CreateCircle(const std::string& args) const
 {
 	CircleArgs circleArgs;
 	if (!::ParseCircleArgs(args, circleArgs))
@@ -258,11 +264,9 @@ bool CShapeApp::CreateCircle(const std::string& args) const
 	{
 		m_creator.CreateCircle(circleArgs.center, circleArgs.radius, circleArgs.outline, circleArgs.fill);
 	}
-
-	return true;
 }
 
-bool CShapeApp::PrintInfo(const std::string&) const
+void CShapeApp::PrintInfo(const std::string&) const
 {
 	const Shapes& shapes = m_creator.GetShapes();
 	if (shapes.empty())
@@ -277,11 +281,9 @@ bool CShapeApp::PrintInfo(const std::string&) const
 		m_output << ::GetMinPerimeterShapeInfo(shapes) << "\n"
 				 << std::endl;
 	}
-
-	return true;
 }
 
-bool CShapeApp::Help(const std::string&) const
+void CShapeApp::Help(const std::string&) const
 {
 	m_output << "Available shapes: line, triangle, rectangle, circle\n";
 	m_output << "Usage:\n";
@@ -293,18 +295,14 @@ bool CShapeApp::Help(const std::string&) const
 	m_output << "delete - deletes all shapes\n";
 	m_output << "draw - draws all shapes on canvas\n";
 	m_output << "clear - clears canvas" << std::endl;
-
-	return true;
 }
 
-bool CShapeApp::DeleteShapes(const std::string&) const
+void CShapeApp::DeleteShapes(const std::string&) const
 {
 	m_creator.DeleteShapes();
-
-	return true;
 }
 
-bool CShapeApp::DrawShapes(const std::string&) const
+void CShapeApp::DrawShapes(const std::string&) const
 {
 	const Shapes& shapes = m_creator.GetShapes();
 	if (shapes.empty())
@@ -320,21 +318,17 @@ bool CShapeApp::DrawShapes(const std::string&) const
 			shape->Draw(m_canvas);
 		}
 
-		if (!m_canvas.Render())
+		if (!m_canvas.RenderToFile(canvasFile))
 		{
 			m_output << "Couldn't open canvas\n";
 		}
 	}
-
-	return true;
 }
 
-bool CShapeApp::ClearCanvas(const std::string&) const
+void CShapeApp::ClearCanvas(const std::string&) const
 {
-	if (!m_canvas.Clear())
+	if (!m_canvas.Clear(canvasFile))
 	{
 		m_output << "Couldn't open canvas\n";
 	}
-
-	return true;
 }

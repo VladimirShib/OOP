@@ -89,7 +89,7 @@ SCENARIO("Testing circles")
 				CHECK(circle.GetCenter().y == 10);
 				CHECK(circle.GetRadius() == 10);
 				CHECK(circle.GetOutlineColor() == 0);
-				CHECK(circle.GetFillColor() == 0xff);
+				CHECK(circle.GetFillColor() == 0xffffff);
 				CHECK(circle.GetPerimeter() == Approx(62.83).margin(0.01));
 				CHECK(circle.GetArea() == Approx(314.16).margin(0.01));
 			}
@@ -132,7 +132,7 @@ SCENARIO("Testing rectangles")
 				CHECK(rectangle.GetWidth() == 20);
 				CHECK(rectangle.GetHeight() == 15);
 				CHECK(rectangle.GetOutlineColor() == 0);
-				CHECK(rectangle.GetFillColor() == 0xff);
+				CHECK(rectangle.GetFillColor() == 0xffffff);
 				CHECK(rectangle.GetPerimeter() == 70);
 				CHECK(rectangle.GetArea() == 300);
 			}
@@ -178,7 +178,7 @@ SCENARIO("Testing triangles")
 				CHECK(triangle.GetVertex3().x == 10);
 				CHECK(triangle.GetVertex3().y == 20);
 				CHECK(triangle.GetOutlineColor() == 0);
-				CHECK(triangle.GetFillColor() == 0xff);
+				CHECK(triangle.GetFillColor() == 0xffffff);
 				CHECK(triangle.GetPerimeter() == Approx(34.14).margin(0.01));
 				CHECK(triangle.GetArea() == 50);
 			}
@@ -249,7 +249,7 @@ SCENARIO("Testing shape app")
 		std::ostringstream oss;
 
 		CShapeCreator creator;
-		CCanvas canvas; // required to construct shape app
+		CSVGCanvas canvas; // required to construct shape app
 		CShapeApp app(creator, canvas, iss, oss);
 
 		WHEN("Unknown command")
@@ -265,7 +265,7 @@ SCENARIO("Testing shape app")
 
 		WHEN("Creating a line")
 		{
-			AND_WHEN("Arguments are invalid")
+			AND_WHEN("Not enough arguments")
 			{
 				std::string command = "line 10 10 15";
 				iss.str(command);
@@ -292,7 +292,7 @@ SCENARIO("Testing shape app")
 
 		WHEN("Creating a triangle")
 		{
-			AND_WHEN("Arguments are invalid")
+			AND_WHEN("Not enough arguments")
 			{
 				std::string command = "triangle 10 10 15 15 20";
 				iss.str(command);
@@ -319,9 +319,21 @@ SCENARIO("Testing shape app")
 
 		WHEN("Creating a rectangle")
 		{
-			AND_WHEN("Arguments are invalid")
+			AND_WHEN("Not enough arguments")
 			{
 				std::string command = "rectangle 10 10 100";
+				iss.str(command);
+
+				THEN("Rectangle won't be created")
+				{
+					CHECK(app.HandleCommand());
+					CHECK(creator.GetShapes().empty());
+				}
+			}
+
+			AND_WHEN("Width and height are negative")
+			{
+				std::string command = "rectangle 10 10 -100 -50";
 				iss.str(command);
 
 				THEN("Rectangle won't be created")
@@ -346,9 +358,21 @@ SCENARIO("Testing shape app")
 
 		WHEN("Creating a circle")
 		{
-			AND_WHEN("Arguments are invalid")
+			AND_WHEN("Not enough arguments")
 			{
 				std::string command = "circle 10 10";
+				iss.str(command);
+
+				THEN("Circle won't be created")
+				{
+					CHECK(app.HandleCommand());
+					CHECK(creator.GetShapes().empty());
+				}
+			}
+
+			AND_WHEN("Radius is negative")
+			{
+				std::string command = "circle 10 10 -25";
 				iss.str(command);
 
 				THEN("Circle won't be created")
@@ -427,14 +451,14 @@ SCENARIO("Testing canvas")
 		std::ostringstream oss;
 
 		CShapeCreator creator;
-		CCanvas canvas;
+		CSVGCanvas canvas;
 		CShapeApp app(creator, canvas, iss, oss);
 
 		std::string canvasFile = "D://Study//OOP//labs//lab4//Shapes//canvas.svg";
 		std::string emptyCanvas = "<?xml version=\"1.0\" encoding=\"utf-8\"?>"
 								  "<svg width=\"1000px\" height=\"800px\" xmlns=\"http://www.w3.org/2000/svg\">"
 								  "</svg>";
-		canvas.Clear();
+		canvas.Clear(canvasFile);
 
 		std::string contents = ::GetFileContents(canvasFile);
 		CHECK(contents == emptyCanvas);
@@ -442,7 +466,7 @@ SCENARIO("Testing canvas")
 		WHEN("Drawing a line")
 		{
 			canvas.DrawLine({ 0, 0 }, { 10, 10 }, 0xffffff);
-			canvas.Render();
+			canvas.RenderToFile(canvasFile);
 
 			THEN("Line will be drawn")
 			{
@@ -459,7 +483,7 @@ SCENARIO("Testing canvas")
 		{
 			std::vector<CPoint> points = { { 0, 0 }, { 10, 0 }, { 0, 10 } };
 			canvas.DrawPolygon(points, 0xff1024, 0x0000cc);
-			canvas.Render();
+			canvas.RenderToFile(canvasFile);
 
 			THEN("Triangle will be drawn")
 			{
@@ -476,14 +500,14 @@ SCENARIO("Testing canvas")
 		{
 			std::vector<CPoint> points = { { 0, 0 }, { 10, 0 }, { 10, 10 }, { 0, 10 } };
 			canvas.DrawPolygon(points);
-			canvas.Render();
+			canvas.RenderToFile(canvasFile);
 
 			THEN("Rectangle will be drawn")
 			{
 				std::string canvasWithRectangle = "<?xml version=\"1.0\" encoding=\"utf-8\"?>"
-												 "<svg width=\"1000px\" height=\"800px\" xmlns=\"http://www.w3.org/2000/svg\">"
-												 "\t<polygon points=\"0.00,0.00 10.00,0.00 10.00,10.00 0.00,10.00 \" style=\"fill:#ffffff;stroke:#000000;stroke-width:3\" />"
-												 "</svg>";
+												  "<svg width=\"1000px\" height=\"800px\" xmlns=\"http://www.w3.org/2000/svg\">"
+												  "\t<polygon points=\"0.00,0.00 10.00,0.00 10.00,10.00 0.00,10.00 \" style=\"fill:#ffffff;stroke:#000000;stroke-width:3\" />"
+												  "</svg>";
 				contents = ::GetFileContents(canvasFile);
 				CHECK(contents == canvasWithRectangle);
 			}
@@ -491,22 +515,22 @@ SCENARIO("Testing canvas")
 
 		WHEN("Drawing a circle")
 		{
-			canvas.DrawCircle({50, 50}, 25, 0xabcdef50, 0xff00ff);
-			canvas.Render();
+			canvas.DrawCircle({ 50, 50 }, 25, 0xabcdef50, 0xff00ff);
+			canvas.RenderToFile(canvasFile);
 
 			THEN("Circle will be drawn")
 			{
 				std::string canvasWithCircle = "<?xml version=\"1.0\" encoding=\"utf-8\"?>"
-												  "<svg width=\"1000px\" height=\"800px\" xmlns=\"http://www.w3.org/2000/svg\">"
-												  "\t<circle r=\"25.00\" cx=\"50.00\" cy=\"50.00\" style=\"fill:#ff00ff;stroke:#abcdef50;stroke-width:3\" />"
-												  "</svg>";
+											   "<svg width=\"1000px\" height=\"800px\" xmlns=\"http://www.w3.org/2000/svg\">"
+											   "\t<circle r=\"25.00\" cx=\"50.00\" cy=\"50.00\" style=\"fill:#ff00ff;stroke:#abcdef50;stroke-width:3\" />"
+											   "</svg>";
 				contents = ::GetFileContents(canvasFile);
 				CHECK(contents == canvasWithCircle);
 			}
 
 			AND_WHEN("Clearing canvas")
 			{
-				canvas.Clear();
+				canvas.Clear(canvasFile);
 
 				THEN("Canvas will be cleared")
 				{
