@@ -2,14 +2,22 @@
 #include <cassert>
 
 StringList::StringList()
-	: m_size(0)
-	, m_firstNode(new Node("", nullptr, nullptr))
-	, m_lastNode(new Node("", nullptr, nullptr))
 {
-	m_firstNode->next = m_lastNode;
-	m_lastNode->prev = m_firstNode;
-	m_firstNode->sentinel = true;
-	m_lastNode->sentinel = true;
+	try
+	{
+		m_firstNode = new Node(nullptr, nullptr);
+		m_lastNode = new Node(nullptr, nullptr);
+
+		m_firstNode->next = m_lastNode;
+		m_lastNode->prev = m_firstNode;
+	}
+	catch (...)
+	{
+		delete m_firstNode;
+		delete m_lastNode;
+
+		throw;
+	}
 }
 
 StringList::StringList(std::initializer_list<std::string> initList)
@@ -25,6 +33,10 @@ StringList::StringList(std::initializer_list<std::string> initList)
 	catch (...)
 	{
 		Clear();
+		delete m_firstNode;
+		delete m_lastNode;
+
+		throw;
 	}
 }
 
@@ -39,24 +51,14 @@ StringList::StringList(const StringList& other)
 			temp.PushBack(*it);
 		}
 
-		std::swap(m_size, temp.m_size);
-		std::swap(m_firstNode, temp.m_firstNode);
-		std::swap(m_lastNode, temp.m_lastNode);
+		SwapLists(temp);
 	}
 }
 
 StringList::StringList(StringList&& other)
-	: m_size(other.m_size)
-	, m_firstNode(other.m_firstNode)
-	, m_lastNode(other.m_lastNode)
+	: StringList()
 {
-	other.m_size = 0;
-	other.m_firstNode = new Node("", nullptr, nullptr);
-	other.m_lastNode = new Node("", nullptr, nullptr);
-	other.m_firstNode->next = other.m_lastNode;
-	other.m_lastNode->prev = other.m_firstNode;
-	other.m_firstNode->sentinel = true;
-	other.m_lastNode->sentinel = true;
+	SwapLists(other);
 }
 
 StringList::~StringList() noexcept
@@ -124,7 +126,7 @@ void StringList::PushBack(const std::string& str)
 	Node* newNode = new Node(str, m_lastNode->prev, m_lastNode);
 	m_lastNode->prev->next = newNode;
 	m_lastNode->prev = newNode;
-	
+
 	++m_size;
 }
 
@@ -214,6 +216,13 @@ StringList::iterator StringList::Erase(iterator pos)
 	return nextNode;
 }
 
+void StringList::SwapLists(StringList& other) noexcept
+{
+	std::swap(m_size, other.m_size);
+	std::swap(m_firstNode, other.m_firstNode);
+	std::swap(m_lastNode, other.m_lastNode);
+}
+
 StringList::iterator StringList::begin() noexcept
 {
 	return m_firstNode->next;
@@ -265,9 +274,7 @@ StringList& StringList::operator=(const StringList& other)
 		else
 		{
 			StringList temp = other;
-			std::swap(m_size, temp.m_size);
-			std::swap(m_firstNode, temp.m_firstNode);
-			std::swap(m_lastNode, temp.m_lastNode);
+			SwapLists(temp);
 		}
 	}
 
@@ -279,9 +286,7 @@ StringList& StringList::operator=(StringList&& other) noexcept
 	if (this != &other)
 	{
 		Clear();
-		std::swap(m_size, other.m_size);
-		std::swap(m_firstNode, other.m_firstNode);
-		std::swap(m_lastNode, other.m_lastNode);
+		SwapLists(other);
 	}
 
 	return *this;

@@ -16,13 +16,21 @@ class StringList
 			: data(data_)
 			, prev(prev_)
 			, next(next_)
+			, sentinel(false)
+		{
+		}
+
+		Node(Node* prev_, Node* next_)
+			: prev(prev_)
+			, next(next_)
+			, sentinel(true)
 		{
 		}
 
 		std::string data;
 		Node* prev;
 		Node* next;
-		bool sentinel = false;
+		bool sentinel;
 	};
 
 public:
@@ -35,16 +43,19 @@ public:
 		using iterator_category = std::bidirectional_iterator_tag;
 		using value_type = Node;
 		using difference_type = std::ptrdiff_t;
-		using StrType = std::conditional_t<IsConst, const std::string&, std::string&>;
+		using StrRef = std::conditional_t<IsConst, const std::string&, std::string&>;
+		using StrPtr = std::conditional_t<IsConst, const std::string*, std::string*>;
 
+		ListIterator();
 		ListIterator(Node* ptr);
 
-		StrType operator*() const;
+		StrRef operator*() const;
+		StrPtr operator->() const;
 		ListIterator& operator++();
 		ListIterator operator++(int);
 		ListIterator& operator--();
 		ListIterator operator--(int);
-		auto operator<=>(const ListIterator& other) const = default;
+		bool operator==(const ListIterator& other) const;
 
 	private:
 		Node* m_ptr;
@@ -59,16 +70,18 @@ public:
 		using iterator_category = std::bidirectional_iterator_tag;
 		using value_type = Node;
 		using difference_type = std::ptrdiff_t;
-		using StrType = std::conditional_t<IsConst, const std::string&, std::string&>;
+		using StrRef = std::conditional_t<IsConst, const std::string&, std::string&>;
+		using StrPtr = std::conditional_t<IsConst, const std::string*, std::string*>;
 
+		ListReverseIterator();
 		ListReverseIterator(Node* ptr);
-
-		StrType operator*() const;
+		StrRef operator*() const;
+		StrPtr operator->() const;
 		ListReverseIterator& operator++();
 		ListReverseIterator operator++(int);
 		ListReverseIterator& operator--();
 		ListReverseIterator operator--(int);
-		auto operator<=>(const ListReverseIterator& other) const = default;
+		bool operator==(const ListReverseIterator& other) const;
 
 	private:
 		Node* m_ptr;
@@ -114,10 +127,19 @@ public:
 	StringList& operator=(StringList&& other) noexcept;
 
 private:
-	std::size_t m_size;
-	Node* m_firstNode;
-	Node* m_lastNode;
+	void SwapLists(StringList& other) noexcept;
+
+private:
+	std::size_t m_size = 0;
+	Node* m_firstNode = nullptr;
+	Node* m_lastNode = nullptr;
 };
+
+template <bool IsConst>
+StringList::ListIterator<IsConst>::ListIterator()
+	: m_ptr(nullptr)
+{
+}
 
 template <bool IsConst>
 StringList::ListIterator<IsConst>::ListIterator(Node* ptr)
@@ -126,14 +148,25 @@ StringList::ListIterator<IsConst>::ListIterator(Node* ptr)
 }
 
 template <bool IsConst>
-StringList::ListIterator<IsConst>::StrType StringList::ListIterator<IsConst>::operator*() const
+StringList::ListIterator<IsConst>::StrRef StringList::ListIterator<IsConst>::operator*() const
 {
 	if (!m_ptr || m_ptr->sentinel)
 	{
 		throw std::out_of_range("Dereferencing of nullptr");
 	}
 
-	return StrType(m_ptr->data);
+	return StrRef(m_ptr->data);
+}
+
+template <bool IsConst>
+StringList::ListIterator<IsConst>::StrPtr StringList::ListIterator<IsConst>::operator->() const
+{
+	if (!m_ptr || m_ptr->sentinel)
+	{
+		throw std::out_of_range("Dereferencing of nullptr");
+	}
+
+	return &m_ptr->data;
 }
 
 template <bool IsConst>
@@ -172,8 +205,20 @@ StringList::ListIterator<IsConst> StringList::ListIterator<IsConst>::operator--(
 {
 	auto temp = *this;
 	--(*this);
-	
+
 	return temp;
+}
+
+template <bool IsConst>
+bool StringList::ListIterator<IsConst>::operator==(const ListIterator& other) const
+{
+	return m_ptr == other.m_ptr;
+}
+
+template <bool IsConst>
+StringList::ListReverseIterator<IsConst>::ListReverseIterator()
+	: m_ptr(nullptr)
+{
 }
 
 template <bool IsConst>
@@ -183,14 +228,25 @@ StringList::ListReverseIterator<IsConst>::ListReverseIterator(Node* ptr)
 }
 
 template <bool IsConst>
-StringList::ListReverseIterator<IsConst>::StrType StringList::ListReverseIterator<IsConst>::operator*() const
+StringList::ListReverseIterator<IsConst>::StrRef StringList::ListReverseIterator<IsConst>::operator*() const
 {
 	if (!m_ptr || m_ptr->sentinel)
 	{
 		throw std::out_of_range("Dereferencing of nullptr");
 	}
 
-	return StrType(m_ptr->data);
+	return StrRef(m_ptr->data);
+}
+
+template <bool IsConst>
+StringList::ListReverseIterator<IsConst>::StrPtr StringList::ListReverseIterator<IsConst>::operator->() const
+{
+	if (!m_ptr || m_ptr->sentinel)
+	{
+		throw std::out_of_range("Dereferencing of nullptr");
+	}
+
+	return &m_ptr->data;
 }
 
 template <bool IsConst>
@@ -231,4 +287,10 @@ StringList::ListReverseIterator<IsConst> StringList::ListReverseIterator<IsConst
 	--(*this);
 
 	return temp;
+}
+
+template <bool IsConst>
+bool StringList::ListReverseIterator<IsConst>::operator==(const ListReverseIterator& other) const
+{
+	return m_ptr == other.m_ptr;
 }
